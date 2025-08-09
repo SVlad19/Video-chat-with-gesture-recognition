@@ -17,7 +17,14 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+private slots:
+    void on_actionConnect_triggered();
+
+    void HandleConnectionData(const QString& ipaddress);
+
 private:
     Ui::MainWindow *ui;
+    QScopedPointer<class ConnectionWidget> ConnectionWindowWidget;
+    QScopedPointer<class ClientManager> Client;
 };
 #endif // MAINWINDOW_H

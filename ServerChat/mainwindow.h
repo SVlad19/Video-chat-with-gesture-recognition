@@ -19,5 +19,6 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    QScopedPointer<class ServerManager> ServerManag;
 };
 #endif // MAINWINDOW_H
