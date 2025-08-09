@@ -22,7 +22,13 @@ private slots:
 
     void HandleConnectionData(const QString& ipaddress);
 
+    void on_actionExit_triggered();
+
+    void on_actionDisconect_triggered();
+
 private:
+    void SetupClient();
+
     Ui::MainWindow *ui;
     QScopedPointer<class ConnectionWidget> ConnectionWindowWidget;
     QScopedPointer<class ClientManager> Client;

@@ -28,6 +28,8 @@
      <string>Option</string>
     </property>
     <addaction name="actionConnect"/>
+    <addaction name="actionDisconnect"/>
+    <addaction name="actionExit"/>
    </widget>
    <addaction name="menuOption"/>
   </widget>
@@ -35,6 +37,16 @@
   <action name="actionConnect">
    <property name="text">
     <string>Connect</string>
+   </property>
+  </action>
+  <action name="actionDisconnect">
+   <property name="text">
+    <string>Disconnect</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
    </property>
   </action>
  </widget>
