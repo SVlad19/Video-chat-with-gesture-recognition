@@ -17,6 +17,10 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+private slots:
+    void NewClient(class QTcpSocket* ClientSocket);
+    void ClientDisconnected(class QTcpSocket* ClientSocket);
+
 private:
     Ui::MainWindow *ui;
     QScopedPointer<class ServerManager> ServerManag;

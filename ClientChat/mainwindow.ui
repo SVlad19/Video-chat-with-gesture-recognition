@@ -6,20 +6,467 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>1089</width>
+    <height>710</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
-  <widget class="QWidget" name="centralwidget"/>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <layout class="QVBoxLayout" name="verticalLayout_6">
+      <item>
+       <widget class="QGroupBox" name="videoGroupBox">
+        <property name="title">
+         <string>Video</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <item>
+            <widget class="QLabel" name="label_3">
+             <property name="maximumSize">
+              <size>
+               <width>105</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Choose camera: </string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="cbCameras">
+             <property name="maximumSize">
+              <size>
+               <width>150</width>
+               <height>16777215</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QCameraViewfinder" name="wCameraViewfinder" native="true">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QPushButton" name="btnStartVideo">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string>Start</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btnStopVideo">
+             <property name="text">
+              <string>Stop</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="videoSettingsGroupBox">
+        <property name="title">
+         <string>Video Settings</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_3">
+           <item>
+            <layout class="QHBoxLayout" name="hlFrameRate">
+             <item>
+              <widget class="QLabel" name="label_4">
+               <property name="text">
+                <string>Frame rate: </string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSlider" name="HSliderFrameRate">
+               <property name="minimum">
+                <number>100</number>
+               </property>
+               <property name="maximum">
+                <number>1000</number>
+               </property>
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="invertedAppearance">
+                <bool>false</bool>
+               </property>
+               <property name="invertedControls">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="hlFrameRate_2">
+             <item>
+              <widget class="QLabel" name="label_5">
+               <property name="text">
+                <string>Brightness: </string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSlider" name="brightnessSlider">
+               <property name="minimum">
+                <number>-10</number>
+               </property>
+               <property name="maximum">
+                <number>10</number>
+               </property>
+               <property name="singleStep">
+                <number>1</number>
+               </property>
+               <property name="value">
+                <number>-1</number>
+               </property>
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="invertedAppearance">
+                <bool>false</bool>
+               </property>
+               <property name="invertedControls">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="hlFrameRate_3">
+             <item>
+              <widget class="QLabel" name="label_6">
+               <property name="text">
+                <string>Contrast:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSlider" name="contrastSlider">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="minimum">
+                <number>-10</number>
+               </property>
+               <property name="maximum">
+                <number>10</number>
+               </property>
+               <property name="singleStep">
+                <number>1</number>
+               </property>
+               <property name="pageStep">
+                <number>10</number>
+               </property>
+               <property name="value">
+                <number>-1</number>
+               </property>
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="invertedAppearance">
+                <bool>false</bool>
+               </property>
+               <property name="invertedControls">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="hlFrameRate_5">
+             <item>
+              <widget class="QLabel" name="label_8">
+               <property name="text">
+                <string>White Balance:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QComboBox" name="CBWhiteBalance">
+               <item>
+                <property name="text">
+                 <string>WhiteBalanceAuto</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>WhiteBalanceManual</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>WhiteBalanceSunlight</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>WhiteBalanceCloudy</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>WhiteBalanceShade</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>WhiteBalanceTungsten</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>WhiteBalanceFluorescent</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>WhiteBalanceFlash</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>WhiteBalanceSunset</string>
+                </property>
+               </item>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="hlFrameRate_6">
+             <item>
+              <widget class="QLabel" name="label_9">
+               <property name="text">
+                <string>Color Filter</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QComboBox" name="CBColorFilter">
+               <item>
+                <property name="text">
+                 <string>ColorFilterNone</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>ColorFilterGrayscale</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>ColorFilterNegative</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>ColorFilterSolarize</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>ColorFilterSepia</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>ColorFilterPosterize</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>ColorFilterWhiteboard</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>ColorFilterBlackboard</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>ColorFilterAqua</string>
+                </property>
+               </item>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="0" column="1">
+     <layout class="QVBoxLayout" name="verticalLayout_5">
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <layout class="QHBoxLayout" name="clientNameGroupBox">
+          <item>
+           <widget class="QLineEdit" name="lineClientName">
+            <property name="placeholderText">
+             <string>Enter Client Name</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="cbStatus">
+            <item>
+             <property name="text">
+              <string>None</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Avaliable</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Away</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Busy</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="title">
+           <string>Chat</string>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="QListWidget" name="listChat"/>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QGridLayout" name="chatFunc">
+        <item row="1" column="0">
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>Message:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="4">
+         <widget class="QPushButton" name="btnSend">
+          <property name="text">
+           <string>Send</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Destination:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="5">
+         <widget class="QPushButton" name="brnSendFile">
+          <property name="maximumSize">
+           <size>
+            <width>35</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>...</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1" colspan="2">
+         <widget class="QLineEdit" name="leMessage"/>
+        </item>
+        <item row="0" column="1">
+         <widget class="QComboBox" name="cbDestination">
+          <item>
+           <property name="text">
+            <string>Server</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>All</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="1" column="3">
+         <widget class="QCheckBox" name="checkBox">
+          <property name="text">
+           <string>Gesture</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>1089</width>
      <height>26</height>
     </rect>
    </property>
@@ -50,6 +497,14 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QCameraViewfinder</class>
+   <extends>QWidget</extends>
+   <header location="global">qcameraviewfinder.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

@@ -10,6 +10,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     ui->actionDisconnect->setEnabled(false);
+    ui->lineClientName->setText("Client");
+    ui->centralwidget->setEnabled(false);
 
     ConnectionWindowWidget.reset(new ConnectionWidget());
     connect(ConnectionWindowWidget.data(),&ConnectionWidget::ConnectionDataReady,this,&MainWindow::HandleConnectionData);
@@ -61,8 +63,19 @@ void MainWindow::on_actionExit_triggered()
 }
 
 
-void MainWindow::on_actionDisconect_triggered()
+void MainWindow::on_actionDisconnect_triggered()
 {
-    Client->DisconnectFromServer();
+    if(Client){
+        Client->DisconnectFromServer();
+    }
+}
+
+
+void MainWindow::on_lineClientName_editingFinished()
+{
+    if(Client){
+        QString Name = ui->lineClientName->text().trimmed();
+        Client->SendNewName(Name);
+    }
 }
 

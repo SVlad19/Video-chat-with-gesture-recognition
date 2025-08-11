@@ -11,11 +11,13 @@ CONFIG += c++17
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
-    servermanager.cpp
+    servermanager.cpp \
+    ../Utility/protocol.cpp
 
 HEADERS += \
     mainwindow.h \
-    servermanager.h
+    servermanager.h \
+    ../Utility/protocol.h
 
 FORMS += \
     mainwindow.ui
