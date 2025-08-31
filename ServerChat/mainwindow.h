@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "../Utility/protocol.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -20,6 +21,8 @@ public:
 private slots:
     void NewClient(class QTcpSocket* ClientSocket);
     void ClientDisconnected(class QTcpSocket* ClientSocket);
+    void SetClientName(const QString &OldName, const QString& NewName);
+    void SetClientStatus(const ChatProtocol::Status Status);
 
 private:
     Ui::MainWindow *ui;

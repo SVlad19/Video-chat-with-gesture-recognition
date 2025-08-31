@@ -13,15 +13,13 @@ SOURCES += \
     connectionwidget.cpp \
     main.cpp \
     mainwindow.cpp \
-    ../Utility/protocol.cpp \
-    messagemanager.cpp
+    ../Utility/protocol.cpp
 
 HEADERS += \
     clientmanager.h \
     connectionwidget.h \
     mainwindow.h \
-    ../Utility/protocol.h \
-    messagemanager.h
+    ../Utility/protocol.h
 
 FORMS += \
     connectionwidget.ui \

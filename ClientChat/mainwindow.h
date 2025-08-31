@@ -21,10 +21,9 @@ private slots:
     void on_actionConnect_triggered();
     void on_actionExit_triggered();
     void on_actionDisconnect_triggered();
-
-    void HandleConnectionData(const QString& ipaddress);
-
     void on_lineClientName_editingFinished();
+
+    void HandleConnectionData(const QString& IP);
 
 private:
     void SetupClient();
