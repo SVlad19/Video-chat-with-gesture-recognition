@@ -13,6 +13,9 @@ void ChatProtocol::LoadData(QByteArray Data)
     case ChangingName:
         in >> ClientName;
         break;
+    case TextMessage:
+        in >> ClientName >> Receiver >> Message;
+        break;
     default:
         break;
     }
@@ -32,4 +35,15 @@ QByteArray ChatProtocol::GetData(const MessageType Type, const QString &Message)
 QByteArray ChatProtocol::SetNameMessage(const QString &ClientName)
 {
     return GetData(MessageType::ChangingName,ClientName);
+}
+
+QByteArray ChatProtocol::SetTextMessage(const QString &Message, const QString &Sender, const QString &Receiver)
+{
+    QByteArray CurMessage;
+    QDataStream out(&CurMessage, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Version::Qt_5_15);
+
+    out << TextMessage << Sender << Receiver << Message;
+
+    return CurMessage;
 }

@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include "connectionwidget.h"
 #include "clientmanager.h"
+#include "chatitemwidget.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -50,6 +51,28 @@ void MainWindow::HandleConnectionData(const QString &IP)
     }
 }
 
+void MainWindow::SendMessage()
+{
+    QString Message = ui->leMessage->text().trimmed();
+    if(Message.isEmpty()){
+        return;
+    }
+
+    Client->SendMessage(Message,ui->lineClientName->text(),ui->cbDestination->currentText());
+
+    ui->leMessage->clear();
+    ui->leMessage->setFocus();
+
+    ChatItemWidget* ChatWidget = new ChatItemWidget();
+    ChatWidget->SetMessage(Message,true);
+
+    QListWidgetItem* ListItem = new QListWidgetItem();
+    ListItem->setSizeHint(QSize(0,65));
+
+    ui->listChat->addItem(ListItem);
+    ui->listChat->setItemWidget(ListItem,ChatWidget);
+}
+
 void MainWindow::on_actionConnect_triggered()
 {
     if(ConnectionWindowWidget){
@@ -77,5 +100,11 @@ void MainWindow::on_lineClientName_editingFinished()
         QString Name = ui->lineClientName->text().trimmed();
         Client->SendNewName(Name);
     }
+}
+
+
+void MainWindow::on_btnSend_clicked()
+{
+    SendMessage();
 }
 
