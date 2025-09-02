@@ -35,6 +35,8 @@ void MainWindow::NewClient(QTcpSocket *ClientSocket)
     connect(ChatWidget,&ClientChatWidget::IsTyping,[this](QString Name){
         statusBar()->showMessage(Name,750);
     });
+
+    connect(ChatWidget,&ClientChatWidget::TextForOtherClients,ServerManag.data(),&ServerManager::OnTextForOtherClients);
 }
 
 void MainWindow::SetClientName(const QString& PrevName, const QString &Name)

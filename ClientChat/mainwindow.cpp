@@ -20,7 +20,6 @@ MainWindow::MainWindow(QWidget *parent)
     SetupClient();
 }
 
-
 MainWindow::~MainWindow()
 {
     delete ui;
@@ -41,7 +40,21 @@ void MainWindow::SetupClient()
         ui->actionConnect->setEnabled(true);
         ui->actionDisconnect->setEnabled(false);
     });
+    connect(Client.data(), &ClientManager::TextMessageReceived, this, &MainWindow::OnTextMessageReceived);
 
+}
+
+void MainWindow::OnTextMessageReceived(const QString& Message)
+{
+    ChatItemWidget* ChatWidget = new ChatItemWidget();
+    ChatWidget->SetMessage(Message);
+
+    QListWidgetItem* ListItem = new QListWidgetItem();
+    ListItem->setSizeHint(QSize(0,65));
+    ListItem->setBackground(QColor(167,255,237));
+
+    ui->listChat->addItem(ListItem);
+    ui->listChat->setItemWidget(ListItem,ChatWidget);
 }
 
 void MainWindow::HandleConnectionData(const QString &IP)

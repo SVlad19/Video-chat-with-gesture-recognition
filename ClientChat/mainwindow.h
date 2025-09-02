@@ -25,6 +25,7 @@ private slots:
     void on_btnSend_clicked();
 
     void HandleConnectionData(const QString& IP);
+    void OnTextMessageReceived(const QString& Message);
 
 private:
     void SetupClient();
