@@ -21,6 +21,9 @@ signals:
     void Connected();
     void Disconnected();
     void TextMessageReceived(const QString& Message);
+    void ConncetionACK(const QString& ClientName, QList<QString> ClientsName);
+    void NewClientConnectedToServer(const QString& ClientName);
+    void ClientChangedName(const QString& OldName, const QString& NewClientName);
 
 private slots:
     void ReadyRead();

@@ -41,7 +41,35 @@ void MainWindow::SetupClient()
         ui->actionDisconnect->setEnabled(false);
     });
     connect(Client.data(), &ClientManager::TextMessageReceived, this, &MainWindow::OnTextMessageReceived);
+    connect(Client.data(), &ClientManager::ConncetionACK, this, &MainWindow::OnConncetionACK);
+    connect(Client.data(), &ClientManager::NewClientConnectedToServer, this, &MainWindow::OnNewClientConnectedToServer);
+    connect(Client.data(), &ClientManager::ClientChangedName, this, &MainWindow::OnClientChangedName);
+}
 
+void MainWindow::OnClientChangedName(const QString &OldName, const QString &NewClientName)
+{
+    for(int i = 0; i < ui->cbDestination->count(); ++i){
+        if(ui->cbDestination->itemText((i)) == OldName){
+            ui->cbDestination->setItemText(i,NewClientName);
+            return;
+        }
+    }
+}
+
+void MainWindow::OnConncetionACK(const QString &ClientName, QList<QString> ClientsName)
+{
+    ui->cbDestination->clear();
+    ClientsName.prepend("All");
+    ClientsName.prepend("Server");
+
+    foreach(auto Client, ClientsName){
+        ui->cbDestination->addItem(Client);
+    }
+}
+
+void MainWindow::OnNewClientConnectedToServer(const QString &ClientName)
+{
+    ui->cbDestination->addItem(ClientName);
 }
 
 void MainWindow::OnTextMessageReceived(const QString& Message)

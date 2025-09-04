@@ -35,6 +35,15 @@ void ClientManager::ReadyRead()
     case ChatProtocol::TextMessage:
         emit TextMessageReceived(Protocol.GetMessage());
         break;
+    case ChatProtocol::ConnectionACK:
+        emit ConncetionACK(Protocol.GetClientName(),Protocol.GetClientsName());
+        break;
+    case ChatProtocol::NewClientConnected:
+        emit NewClientConnectedToServer(Protocol.GetClientName());
+        break;
+    case ChatProtocol::ClientChangedName:
+        emit ClientChangedName(Protocol.GetOldClientName(),Protocol.GetClientName());
+        break;
     default:
         break;
     }

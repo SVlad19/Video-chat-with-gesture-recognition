@@ -39,13 +39,15 @@ void MainWindow::NewClient(QTcpSocket *ClientSocket)
     connect(ChatWidget,&ClientChatWidget::TextForOtherClients,ServerManag.data(),&ServerManager::OnTextForOtherClients);
 }
 
-void MainWindow::SetClientName(const QString& PrevName, const QString &Name)
+void MainWindow::SetClientName(const QString& OldName, const QString &Name)
 {
     QWidget* Widget = qobject_cast<QWidget*>(sender());
     if(!Widget){return;}
 
     int Index = ui->twChats->indexOf(Widget);
     ui->twChats->setTabText(Index,Name);
+
+    ServerManag->NotifyOtherClients(OldName,Name);
 }
 
 void MainWindow::SetClientStatus(ChatProtocol::Status Status)

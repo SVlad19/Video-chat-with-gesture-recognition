@@ -26,6 +26,9 @@ private slots:
 
     void HandleConnectionData(const QString& IP);
     void OnTextMessageReceived(const QString& Message);
+    void OnConncetionACK(const QString& ClientName, QList<QString> ClientsName);
+    void OnNewClientConnectedToServer(const QString& ClientName);
+    void OnClientChangedName(const QString& OldName, const QString& NewClientName);
 
 private:
     void SetupClient();

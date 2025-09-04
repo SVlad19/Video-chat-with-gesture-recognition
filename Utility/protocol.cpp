@@ -16,6 +16,15 @@ void ChatProtocol::LoadData(QByteArray Data)
     case TextMessage:
         in >> ClientName >> Receiver >> Message;
         break;
+    case ConnectionACK:
+        in >> ClientName >> ClientsName;
+        break;
+    case NewClientConnected:
+        in >> ClientName;
+        break;
+    case ClientChangedName:
+        in >> OldClientName >> ClientName;
+        break;
     default:
         break;
     }
@@ -44,6 +53,33 @@ QByteArray ChatProtocol::SetTextMessage(const QString &Message, const QString &S
     out.setVersion(QDataStream::Version::Qt_5_15);
 
     out << TextMessage << Sender << Receiver << Message;
+
+    return CurMessage;
+}
+
+QByteArray ChatProtocol::SetConnectionACKMessage(const QString &ClientName, QList<QString> OtherClients)
+{
+    QByteArray CurMessage;
+    QDataStream out(&CurMessage, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Version::Qt_5_15);
+
+    out << ConnectionACK << ClientName << OtherClients;
+
+    return CurMessage;
+}
+
+QByteArray ChatProtocol::SetNewClientConnectedMessage(const QString &ClientName)
+{
+    return GetData(MessageType::NewClientConnected,ClientName);
+}
+
+QByteArray ChatProtocol::SetClientChangedNameMessage(const QString &OldName, const QString &Name)
+{
+    QByteArray CurMessage;
+    QDataStream out(&CurMessage, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Version::Qt_5_15);
+
+    out << ClientChangedName << OldName << Name;
 
     return CurMessage;
 }

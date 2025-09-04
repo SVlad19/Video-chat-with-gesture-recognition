@@ -30,7 +30,17 @@ void ServerManager::NewClientConnected()
     connect(ClientSocket,&QTcpSocket::disconnected,this,&ServerManager::OnClientDisconnected);
     emit NewClient(ClientSocket);
 
-    ClientSockets.push_back(ClientSocket);
+    if(Id > 1){
+        QByteArray Message = Protocol.SetConnectionACKMessage(ClientName, ClientSockets.keys());
+        ClientSocket->write(Message);
+
+        auto NewClientMessage = Protocol.SetNewClientConnectedMessage(ClientName);
+        foreach (auto Client, ClientSockets) {
+            Client->write(NewClientMessage);
+        }
+    }
+
+    ClientSockets[ClientName] = ClientSocket;
 }
 
 void ServerManager::OnTextForOtherClients(const QString &Message, const QString &Sender, const QString &Receiver)
@@ -60,6 +70,18 @@ void ServerManager::OnClientDisconnected()
     QTcpSocket* ClientSocket = qobject_cast<QTcpSocket*>(sender());
     if(!ClientSocket) {return;}
 
-    ClientSockets.removeOne(ClientSocket);
+    ClientSockets.remove(ClientSocket->property("ClientName").toString());
     emit ClientDisconnected(ClientSocket);
+}
+
+void ServerManager::NotifyOtherClients(const QString &OldName, const QString &Name)
+{
+    QByteArray Message = Protocol.SetClientChangedNameMessage(OldName,Name);
+
+    foreach (auto Client, ClientSockets) {
+        QString ClientName = Client->property("ClientName").toString();
+        if(ClientName != Name){
+            Client->write(Message);
+        }
+    }
 }

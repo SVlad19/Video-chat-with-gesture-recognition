@@ -26,7 +26,7 @@ void ClientManager::ReadyRead()
     }
     case ChatProtocol::TextMessage:
     {
-        emit TextMessageReceived(Protocol.GetMessage(),Protocol.GetName(),Protocol.GetReceiver());
+        emit TextMessageReceived(Protocol.GetMessage(),Protocol.GetClientName(),Protocol.GetReceiver());
         break;
     }
     default:
@@ -38,7 +38,7 @@ void ClientManager::ReadyRead()
 QString ClientManager::GetName() const
 {
     auto Id = ClientSocket->property("Id").toInt();
-    auto Name = Protocol.GetName().length() > 0 ? Protocol.GetName() : QString("Client (%1)").arg(Id);
+    auto Name = Protocol.GetClientName().length() > 0 ? Protocol.GetClientName() : QString("Client (%1)").arg(Id);
 
     return Name;
 }

@@ -3,12 +3,14 @@
 
 #include <QObject>
 #include "../Utility/protocol.h"
+#include <QMap>
 
 class ServerManager : public QObject
 {
     Q_OBJECT
 public:
     explicit ServerManager(QObject *parent = nullptr);
+    void NotifyOtherClients(const QString& OldName, const QString& Name);
 
 public slots:
     void OnTextForOtherClients(const QString& Message,const QString& Sender, const QString& Receiver);
@@ -25,7 +27,7 @@ private:
     void SetupServer();
 
     QScopedPointer<class QTcpServer> Server;
-    QVector<QTcpSocket*> ClientSockets;
+    QMap<QString, QTcpSocket*> ClientSockets;
     ChatProtocol Protocol;
 };
 
