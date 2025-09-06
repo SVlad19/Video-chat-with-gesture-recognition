@@ -44,6 +44,12 @@ void MainWindow::SetupClient()
     connect(Client.data(), &ClientManager::ConncetionACK, this, &MainWindow::OnConncetionACK);
     connect(Client.data(), &ClientManager::NewClientConnectedToServer, this, &MainWindow::OnNewClientConnectedToServer);
     connect(Client.data(), &ClientManager::ClientChangedName, this, &MainWindow::OnClientChangedName);
+    connect(Client.data(), &ClientManager::ClientTyping, this, &MainWindow::OnClientTyping);
+}
+
+void MainWindow::OnClientTyping()
+{
+    statusBar()->showMessage("Server is typing...",750);
 }
 
 void MainWindow::OnClientChangedName(const QString &OldName, const QString &NewClientName)
@@ -149,3 +155,14 @@ void MainWindow::on_btnSend_clicked()
     SendMessage();
 }
 
+void MainWindow::on_cbStatus_currentIndexChanged(int index)
+{
+    ChatProtocol::Status Status = static_cast<ChatProtocol::Status>(index);
+    Client->SendStatus(Status);
+}
+
+void MainWindow::on_leMessage_textChanged(const QString &arg1)
+{
+    ui->btnSend->setEnabled(arg1.trimmed().length() > 0);
+    Client->SendClientTyping();
+}

@@ -23,12 +23,15 @@ private slots:
     void on_actionDisconnect_triggered();
     void on_lineClientName_editingFinished();
     void on_btnSend_clicked();
+    void on_cbStatus_currentIndexChanged(int index);
+    void on_leMessage_textChanged(const QString &arg1);
 
     void HandleConnectionData(const QString& IP);
     void OnTextMessageReceived(const QString& Message);
     void OnConncetionACK(const QString& ClientName, QList<QString> ClientsName);
     void OnNewClientConnectedToServer(const QString& ClientName);
     void OnClientChangedName(const QString& OldName, const QString& NewClientName);
+    void OnClientTyping();
 
 private:
     void SetupClient();

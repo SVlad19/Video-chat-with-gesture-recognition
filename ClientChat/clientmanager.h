@@ -16,6 +16,8 @@ public:
     void SendNewName(const QString& NewName);
     bool IsConnected() const;
     void SendMessage(const QString& Message, const QString &Sender, const QString& Receiver);
+    void SendStatus(ChatProtocol::Status Status);
+    void SendClientTyping();
 
 signals:
     void Connected();
@@ -24,6 +26,7 @@ signals:
     void ConncetionACK(const QString& ClientName, QList<QString> ClientsName);
     void NewClientConnectedToServer(const QString& ClientName);
     void ClientChangedName(const QString& OldName, const QString& NewClientName);
+    void ClientTyping();
 
 private slots:
     void ReadyRead();

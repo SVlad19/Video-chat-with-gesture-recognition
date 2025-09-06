@@ -18,14 +18,15 @@ public:
 
 signals:
     void ClientNameChanged(const QString& OldName, const QString& Name);
-    void IsTyping(const QString& Message);
-    void StatusChanged(ChatProtocol::Status Status);
+    void ClientTyping(const QString& Message);
+    void ClientChangedStatus(ChatProtocol::Status Status);
     void TextForOtherClients(const QString& Message,const QString &Sender, const QString &Receiver);
 
 private slots:
     void ClientDisconnected();
     void OnClientNameChanged(const QString& OldName, const QString& NewName);
     void TextMessageReceived(const QString& Message,const QString &Sender, const QString &Receiver);
+    void OnClientTyping();
 
 private:
     Ui::ClientChatWidget *ui;

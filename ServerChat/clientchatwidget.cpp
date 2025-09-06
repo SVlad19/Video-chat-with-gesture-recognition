@@ -15,12 +15,19 @@ ClientChatWidget::ClientChatWidget(QTcpSocket *ClientSocket, QWidget *parent)
     connect(Client.data(),&ClientManager::Disconnected,this,&ClientChatWidget::ClientDisconnected);
     connect(Client.data(),&ClientManager::NameChanged,this,&ClientChatWidget::OnClientNameChanged);
     connect(Client.data(),&ClientManager::TextMessageReceived,this,&ClientChatWidget::TextMessageReceived);
-
+    connect(Client.data(),&ClientManager::ClientChangedStatus,this,&ClientChatWidget::ClientChangedStatus);
+    connect(Client.data(),&ClientManager::ClientTyping,this,&ClientChatWidget::OnClientTyping);
+    connect(ui->leMessage,&QLineEdit::textChanged,Client.data(),&ClientManager::SendClientTyping);
 }
 
 ClientChatWidget::~ClientChatWidget()
 {
     delete ui;
+}
+
+void ClientChatWidget::OnClientTyping()
+{
+    emit ClientTyping(QString("%1 is typing...").arg(Client->GetName()));
 }
 
 void ClientChatWidget::ClientDisconnected()

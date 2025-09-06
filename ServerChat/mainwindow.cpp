@@ -31,8 +31,8 @@ void MainWindow::NewClient(QTcpSocket *ClientSocket)
     ui->twChats->addTab(ChatWidget,QString("Client (%1").arg(Id));
 
     connect(ChatWidget, &ClientChatWidget::ClientNameChanged,this,&MainWindow::SetClientName);
-    connect(ChatWidget, &ClientChatWidget::StatusChanged,this,&MainWindow::SetClientStatus);
-    connect(ChatWidget,&ClientChatWidget::IsTyping,[this](QString Name){
+    connect(ChatWidget, &ClientChatWidget::ClientChangedStatus,this,&MainWindow::SetClientStatus);
+    connect(ChatWidget,&ClientChatWidget::ClientTyping,[this](QString Name){
         statusBar()->showMessage(Name,750);
     });
 

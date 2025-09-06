@@ -44,6 +44,9 @@ void ClientManager::ReadyRead()
     case ChatProtocol::ClientChangedName:
         emit ClientChangedName(Protocol.GetOldClientName(),Protocol.GetClientName());
         break;
+    case ChatProtocol::ClientTyping:
+        emit ClientTyping();
+        break;
     default:
         break;
     }
@@ -64,5 +67,21 @@ bool ClientManager::IsConnected() const
 
 void ClientManager::SendMessage(const QString &Message, const QString& Sender, const QString &Receiver)
 {
-    ServerSocket->write(Protocol.SetTextMessage(Message,Sender,Receiver));
+    if(ServerSocket && ServerSocket->state() == QTcpSocket::ConnectedState){
+        ServerSocket->write(Protocol.SetTextMessage(Message,Sender,Receiver));
+    }
+}
+
+void ClientManager::SendStatus(ChatProtocol::Status Status)
+{
+    if(ServerSocket && ServerSocket->state() == QTcpSocket::ConnectedState){
+        ServerSocket->write(Protocol.SetStatusMessage(Status));
+    }
+}
+
+void ClientManager::SendClientTyping()
+{
+    if(ServerSocket && ServerSocket->state() == QTcpSocket::ConnectedState){
+        ServerSocket->write(Protocol.ClientTypingMessage());
+    }
 }

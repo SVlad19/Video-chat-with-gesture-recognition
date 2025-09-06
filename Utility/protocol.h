@@ -9,7 +9,9 @@ public:
         TextMessage,
         ConnectionACK,
         NewClientConnected,
-        ClientChangedName
+        ClientChangedName,
+        ClientChangeStatus,
+        ClientTyping
     };
 
     enum Status{
@@ -26,6 +28,8 @@ public:
     QByteArray SetConnectionACKMessage(const QString& ClientName, QList<QString> OtherClients);
     QByteArray SetNewClientConnectedMessage(const QString& ClientName);
     QByteArray SetClientChangedNameMessage(const QString& OldName, const QString& Name);
+    QByteArray SetStatusMessage(ChatProtocol::Status Status);
+    QByteArray ClientTypingMessage();
 
     inline MessageType GetDataType() const{return DataType;}
     inline QString GetClientName() const{return ClientName;}
@@ -33,6 +37,7 @@ public:
     inline QString GetReceiver() const{return Receiver;}
     inline QList<QString> GetClientsName()const {return ClientsName;}
     inline QString GetOldClientName() const {return OldClientName;};
+    inline ChatProtocol::Status GetClientStatus() const {return ClientStatus;}
 
 private:
     QByteArray GetData(const MessageType Type, const QString& Message);
@@ -42,6 +47,7 @@ private:
     QString OldClientName;
     QString Receiver;
     QString Message;
+    ChatProtocol::Status ClientStatus;
     QList<QString> ClientsName;
 
 };

@@ -29,6 +29,12 @@ void ClientManager::ReadyRead()
         emit TextMessageReceived(Protocol.GetMessage(),Protocol.GetClientName(),Protocol.GetReceiver());
         break;
     }
+    case ChatProtocol::ClientChangeStatus:
+        emit ClientChangedStatus(Protocol.GetClientStatus());
+        break;
+    case ChatProtocol::ClientTyping:
+        emit ClientTyping();
+        break;
     default:
         break;
     }
@@ -41,4 +47,9 @@ QString ClientManager::GetName() const
     auto Name = Protocol.GetClientName().length() > 0 ? Protocol.GetClientName() : QString("Client (%1)").arg(Id);
 
     return Name;
+}
+
+void ClientManager::SendClientTyping()
+{
+    ClientSocket->write(Protocol.ClientTypingMessage());
 }
