@@ -16,7 +16,9 @@ public:
     explicit ClientChatWidget(class QTcpSocket* ClientSocket, QWidget *parent = nullptr);
     ~ClientChatWidget();
 
-signals:
+    void Disconnect();
+
+signals:    
     void ClientNameChanged(const QString& OldName, const QString& Name);
     void ClientTyping(const QString& Message);
     void ClientChangedStatus(ChatProtocol::Status Status);
@@ -27,6 +29,8 @@ private slots:
     void OnClientNameChanged(const QString& OldName, const QString& NewName);
     void TextMessageReceived(const QString& Message,const QString &Sender, const QString &Receiver);
     void OnClientTyping();
+    void OnInitReceivingFile(const QString& ClientName, const QString& FileName, qint64 FileSize);
+    void OnFileSavingFinished(const QString& FilePath);
 
 private:
     Ui::ClientChatWidget *ui;

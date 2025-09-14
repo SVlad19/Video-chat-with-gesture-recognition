@@ -85,3 +85,12 @@ void ServerManager::NotifyOtherClients(const QString &OldName, const QString &Na
         }
     }
 }
+
+void ServerManager::DisconnectAllClients()
+{
+    foreach (auto Client, ClientSockets) {
+        if(Client){
+            Client->disconnectFromHost();
+        }
+    }
+}

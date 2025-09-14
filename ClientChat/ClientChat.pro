@@ -12,21 +12,26 @@ SOURCES += \
     chatitemwidget.cpp \
     clientmanager.cpp \
     connectionwidget.cpp \
+    filemanager.cpp \
     main.cpp \
     mainwindow.cpp \
-    ../Utility/protocol.cpp
+    ../Utility/protocol.cpp \
+    progressdialogwidget.cpp
 
 HEADERS += \
     chatitemwidget.h \
     clientmanager.h \
     connectionwidget.h \
+    filemanager.h \
     mainwindow.h \
-    ../Utility/protocol.h
+    ../Utility/protocol.h \
+    progressdialogwidget.h
 
 FORMS += \
     chatitemwidget.ui \
     connectionwidget.ui \
-    mainwindow.ui
+    mainwindow.ui \
+    progressdialogwidget.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

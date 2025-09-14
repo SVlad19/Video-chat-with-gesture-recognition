@@ -1,4 +1,7 @@
 #include "clientmanager.h"
+#include <QDataStream>
+#include <QDateTime>
+#include <QDir>
 #include <QTcpSocket>
 
 ClientManager::ClientManager(QTcpSocket* Socket) {
@@ -15,7 +18,6 @@ void ClientManager::ReadyRead()
     QByteArray Data = ClientSocket->readAll();
     Protocol.LoadData(Data);
 
-    qDebug() << "Type = "<< Protocol.GetDataType();
     switch (Protocol.GetDataType()) {
     case ChatProtocol::ChangingName:
     {
@@ -35,6 +37,12 @@ void ClientManager::ReadyRead()
     case ChatProtocol::ClientTyping:
         emit ClientTyping();
         break;
+    case ChatProtocol::InitSendingFile:
+        emit InitReceivingFile(Protocol.GetClientName(), Protocol.GetFileName(), Protocol.GetFileSize());
+        break;
+    case ChatProtocol::FileChunk:
+        SaveFileChunk();
+        break;
     default:
         break;
     }
@@ -43,6 +51,8 @@ void ClientManager::ReadyRead()
 
 QString ClientManager::GetName() const
 {
+    if(!ClientSocket) {return QString();}
+
     auto Id = ClientSocket->property("Id").toInt();
     auto Name = Protocol.GetClientName().length() > 0 ? Protocol.GetClientName() : QString("Client (%1)").arg(Id);
 
@@ -51,5 +61,57 @@ QString ClientManager::GetName() const
 
 void ClientManager::SendClientTyping()
 {
-    ClientSocket->write(Protocol.ClientTypingMessage());
+    if(ClientSocket){
+        ClientSocket->write(Protocol.ClientTypingMessage());
+    }
+}
+
+void ClientManager::DisconnectFromHost()
+{
+    if(ClientSocket){
+        ClientSocket->disconnectFromHost();
+    }
+}
+
+void ClientManager::SendResponseToReceiveFile(bool bAgreeToReceive)
+{
+    if(ClientSocket){
+        ClientSocket->write(Protocol.SetResponseToReceiveFileMessage(bAgreeToReceive));
+    }
+}
+
+void ClientManager::SaveFileChunk()
+{
+    if(!ClientSocket){return;}
+
+    if (!bDirectoryCreated) {
+        QDir Directory;
+        Directory.mkdir(GetName());
+
+        FilePath = QDir(GetName()).filePath(Protocol.GetFileName());
+        File.reset(new QFile(FilePath));
+
+        if (!File->open(QIODevice::WriteOnly)) {
+            qDebug() << "Could not open file for writing!";
+            return;
+        }
+
+        bDirectoryCreated = true;
+    }
+
+    File->write(Protocol.GetFileData());
+
+    qint64 LastChunkSize = Protocol.GetFileData().size();
+    ReceivedBytes += LastChunkSize;
+
+    ClientSocket->write(Protocol.SetReadyForNextFileChunkMessage(LastChunkSize));
+
+    if (ReceivedBytes >= Protocol.GetFileSize()) {
+        emit FileSavingFinished(FilePath);
+
+        File->close();
+        File.reset();
+        ReceivedBytes = 0;
+        bDirectoryCreated = false;
+    }
 }

@@ -1,9 +1,12 @@
 #include "clientmanager.h"
+#include "filemanager.h"
 #include <QTcpSocket>
 
 ClientManager::ClientManager(QCameraViewfinder *CameraViewfinder, QWidget *parent) {
 
     ServerSocket.reset(new QTcpSocket());
+    FileManag.reset(new FileManager(ServerSocket.data(),parent));
+
     connect(ServerSocket.data(),&QTcpSocket::connected,this,&ClientManager::Connected);
     connect(ServerSocket.data(),&QTcpSocket::disconnected,this,&ClientManager::Disconnected);
     connect(ServerSocket.data(),&QTcpSocket::readyRead,this,&ClientManager::ReadyRead);
@@ -28,7 +31,7 @@ void ClientManager::DisconnectFromServer()
 
 void ClientManager::ReadyRead()
 {
-    auto Data = ServerSocket->readAll();
+    QByteArray Data = ServerSocket->readAll();
     Protocol.LoadData(Data);
 
     switch (Protocol.GetDataType()) {
@@ -46,6 +49,19 @@ void ClientManager::ReadyRead()
         break;
     case ChatProtocol::ClientTyping:
         emit ClientTyping();
+        break;
+    case ChatProtocol::InitSendingFile:
+        emit InitReceivingFile(Protocol.GetClientName(), Protocol.GetFileName(), Protocol.GetFileSize());
+        break;
+    case ChatProtocol::AcceptSendingFile:
+        FileManag->ShowProgressBar();
+        SendFile(0);
+        break;
+    case ChatProtocol::RejecteSendingFile:
+        emit RejectReceivingFile();
+        break;
+    case ChatProtocol::ReadyForNextFileChunk:
+        SendFile(Protocol.GetSentPackageSize());
         break;
     default:
         break;
@@ -83,5 +99,29 @@ void ClientManager::SendClientTyping()
 {
     if(ServerSocket && ServerSocket->state() == QTcpSocket::ConnectedState){
         ServerSocket->write(Protocol.ClientTypingMessage());
+    }
+}
+
+void ClientManager::SendInitSendingFile(const QString &FileName)
+{
+    if( ServerSocket && FileManag && FileManag->FileSelected(FileName)){
+        ServerSocket->write(Protocol.SetInitSendingFileMessage(FileName));
+    }
+}
+
+void ClientManager::SendResponseToReceiveFile(bool bAgreeToReceive)
+{
+    if(ServerSocket){
+        ServerSocket->write(Protocol.SetResponseToReceiveFileMessage(bAgreeToReceive));
+    }
+}
+
+void ClientManager::SendFile(qint64 Bytes)
+{
+    if(ServerSocket && FileManag){
+        QByteArray FileChunk = FileManag->GetFileChunk(Bytes);
+        if(!FileChunk.isEmpty()){
+            ServerSocket->write(Protocol.SetFileChunkMessage(FileChunk));
+        }
     }
 }

@@ -25,6 +25,7 @@ private slots:
     void on_btnSend_clicked();
     void on_cbStatus_currentIndexChanged(int index);
     void on_leMessage_textChanged(const QString &arg1);
+    void on_btnSendFile_clicked();
 
     void HandleConnectionData(const QString& IP);
     void OnTextMessageReceived(const QString& Message);
@@ -32,6 +33,8 @@ private slots:
     void OnNewClientConnectedToServer(const QString& ClientName);
     void OnClientChangedName(const QString& OldName, const QString& NewClientName);
     void OnClientTyping();
+    void OnInitReceivingFile(const QString& ClientName, const QString& FileName, qint64 FileSize);
+    void OnRejectReceivingFile();
 
 private:
     void SetupClient();

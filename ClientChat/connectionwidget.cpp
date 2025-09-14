@@ -30,5 +30,5 @@ void ConnectionWidget::on_btnClose_clicked()
 
 void ConnectionWidget::on_leIP_textChanged(const QString &arg1)
 {
-     ui->leIP->text().trimmed().length() > 0 ? ui->btnConnect->setEnabled(true): ui->btnConnect->setEnabled(false);
+    ui->leIP->text().trimmed().length() > 0 ? ui->btnConnect->setEnabled(true): ui->btnConnect->setEnabled(false);
 }

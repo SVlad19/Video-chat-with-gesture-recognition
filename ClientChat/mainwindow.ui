@@ -419,7 +419,7 @@
          </widget>
         </item>
         <item row="1" column="5">
-         <widget class="QPushButton" name="brnSendFile">
+         <widget class="QPushButton" name="btnSendFile">
           <property name="maximumSize">
            <size>
             <width>35</width>

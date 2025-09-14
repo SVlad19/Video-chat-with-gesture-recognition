@@ -85,4 +85,17 @@ void MainWindow::ClientDisconnected(QTcpSocket *ClientSocket)
     ui->listClients->addItem(QString("Client " + ClientName + " disconnected!"));
 }
 
+void MainWindow::on_btnDisconnectAll_clicked()
+{
+    if(ServerManag){
+        ServerManag->DisconnectAllClients();
+    }
+}
 
+void MainWindow::on_twChats_tabCloseRequested(int index)
+{
+    if(ClientChatWidget* ChatWidget = qobject_cast<ClientChatWidget*>(ui->twChats->widget(index))){
+        ChatWidget->Disconnect();
+        ui->twChats->removeTab(index);
+    }
+}

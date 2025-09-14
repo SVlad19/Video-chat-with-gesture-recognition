@@ -4,6 +4,9 @@
 #include "clientmanager.h"
 #include "chatitemwidget.h"
 
+#include <QFileDialog>
+#include <QMessageBox>
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -45,6 +48,16 @@ void MainWindow::SetupClient()
     connect(Client.data(), &ClientManager::NewClientConnectedToServer, this, &MainWindow::OnNewClientConnectedToServer);
     connect(Client.data(), &ClientManager::ClientChangedName, this, &MainWindow::OnClientChangedName);
     connect(Client.data(), &ClientManager::ClientTyping, this, &MainWindow::OnClientTyping);
+    connect(Client.data(), &ClientManager::InitReceivingFile, this, &MainWindow::OnInitReceivingFile);
+    connect(Client.data(), &ClientManager::RejectReceivingFile, this, &MainWindow::OnRejectReceivingFile);
+}
+
+void MainWindow::OnInitReceivingFile(const QString &ClientName, const QString &FileName, qint64 FileSize)
+{
+    QString Message = QString("Client (%1) wants to send a file. Do you want accept it?\nFile Name: %2\nFile Size: %3 bytes.").arg(ClientName,FileName).arg(FileSize);
+    auto Result = QMessageBox::question(this,"Receiving File", Message);
+
+    Client->SendResponseToReceiveFile(Result == QMessageBox::Yes ? true : false);
 }
 
 void MainWindow::OnClientTyping()
@@ -157,12 +170,29 @@ void MainWindow::on_btnSend_clicked()
 
 void MainWindow::on_cbStatus_currentIndexChanged(int index)
 {
-    ChatProtocol::Status Status = static_cast<ChatProtocol::Status>(index);
-    Client->SendStatus(Status);
+    if(Client){
+        ChatProtocol::Status Status = static_cast<ChatProtocol::Status>(index);
+        Client->SendStatus(Status);
+    }
 }
 
 void MainWindow::on_leMessage_textChanged(const QString &arg1)
 {
-    ui->btnSend->setEnabled(arg1.trimmed().length() > 0);
-    Client->SendClientTyping();
+    if(Client){
+        ui->btnSend->setEnabled(arg1.trimmed().length() > 0);
+        Client->SendClientTyping();
+    }
+}
+
+void MainWindow::on_btnSendFile_clicked()
+{
+    if(Client){
+        QString FileName = QFileDialog::getOpenFileName(this,"Select a file", "D:/");
+        Client->SendInitSendingFile(FileName);
+    }
+}
+
+void MainWindow::OnRejectReceivingFile()
+{
+    QMessageBox::critical(this, "Sending file", "Operation rejected...");
 }

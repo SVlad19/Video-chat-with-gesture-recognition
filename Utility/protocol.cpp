@@ -1,47 +1,44 @@
 #include "protocol.h"
 
-#include <QDataStream>
-#include <QIODevice>
+#include <QFileInfo>
 
 void ChatProtocol::LoadData(QByteArray Data)
 {
-    QDataStream in(&Data, QIODevice::ReadOnly);
-    in.setVersion(QDataStream::Version::Qt_5_15);
-    in >> DataType;
+    QDataStream In(&Data, QIODevice::ReadOnly);
+    In.setVersion(QDataStream::Version::Qt_5_15);
+    In >> DataType;
 
     switch (DataType) {
     case ChangingName:
-        in >> ClientName;
+        In >> ClientName;
         break;
     case TextMessage:
-        in >> ClientName >> Receiver >> Message;
+        In >> ClientName >> Receiver >> Message;
         break;
     case ConnectionACK:
-        in >> ClientName >> ClientsName;
+        In >> ClientName >> ClientsName;
         break;
     case NewClientConnected:
-        in >> ClientName;
+        In >> ClientName;
         break;
     case ClientChangedName:
-        in >> OldClientName >> ClientName;
+        In >> OldClientName >> ClientName;
         break;
     case ClientChangeStatus:
-        in >> ClientStatus;
+        In >> ClientStatus;
+        break;
+    case InitSendingFile:
+        In >> FileName >> FileSize;
+        break;
+    case ChatProtocol::ReadyForNextFileChunk:
+        In >> SentPackageSize;
+        break;
+    case ChatProtocol::FileChunk:
+        In >> FileData;
         break;
     default:
         break;
     }
-}
-
-QByteArray ChatProtocol::GetData(const MessageType Type, const QString &Message)
-{
-    QByteArray CurMessage;
-    QDataStream out(&CurMessage, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Version::Qt_5_15);
-
-    out << Type << Message;
-
-    return CurMessage;
 }
 
 QByteArray ChatProtocol::SetNameMessage(const QString &ClientName)
@@ -52,10 +49,10 @@ QByteArray ChatProtocol::SetNameMessage(const QString &ClientName)
 QByteArray ChatProtocol::SetTextMessage(const QString &Message, const QString &Sender, const QString &Receiver)
 {
     QByteArray CurMessage;
-    QDataStream out(&CurMessage, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Version::Qt_5_15);
+    QDataStream Out(&CurMessage, QIODevice::WriteOnly);
+    Out.setVersion(QDataStream::Version::Qt_5_15);
 
-    out << TextMessage << Sender << Receiver << Message;
+    Out << TextMessage << Sender << Receiver << Message;
 
     return CurMessage;
 }
@@ -63,10 +60,10 @@ QByteArray ChatProtocol::SetTextMessage(const QString &Message, const QString &S
 QByteArray ChatProtocol::SetConnectionACKMessage(const QString &ClientName, QList<QString> OtherClients)
 {
     QByteArray CurMessage;
-    QDataStream out(&CurMessage, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Version::Qt_5_15);
+    QDataStream Out(&CurMessage, QIODevice::WriteOnly);
+    Out.setVersion(QDataStream::Version::Qt_5_15);
 
-    out << ConnectionACK << ClientName << OtherClients;
+    Out << ConnectionACK << ClientName << OtherClients;
 
     return CurMessage;
 }
@@ -79,26 +76,48 @@ QByteArray ChatProtocol::SetNewClientConnectedMessage(const QString &ClientName)
 QByteArray ChatProtocol::SetClientChangedNameMessage(const QString &OldName, const QString &Name)
 {
     QByteArray CurMessage;
-    QDataStream out(&CurMessage, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Version::Qt_5_15);
+    QDataStream Out(&CurMessage, QIODevice::WriteOnly);
+    Out.setVersion(QDataStream::Version::Qt_5_15);
 
-    out << ClientChangedName << OldName << Name;
+    Out << ClientChangedName << OldName << Name;
 
     return CurMessage;
 }
 
 QByteArray ChatProtocol::SetStatusMessage(Status Status)
 {
-    QByteArray CurMessage;
-    QDataStream out(&CurMessage, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Version::Qt_5_15);
-
-    out << ClientChangeStatus << Status;
-
-    return CurMessage;
+    return GetData(MessageType::ClientChangeStatus,Status);
 }
 
 QByteArray ChatProtocol::ClientTypingMessage()
 {
     return GetData(MessageType::ClientTyping,"");
 }
+
+QByteArray ChatProtocol::SetInitSendingFileMessage(const QString &FileName)
+{
+    QByteArray CurMessage;
+    QDataStream Out(&CurMessage, QIODevice::WriteOnly);
+    Out.setVersion(QDataStream::Version::Qt_5_15);
+
+    QFileInfo Info(FileName);
+    Out << InitSendingFile << Info.fileName() << Info.size();
+
+    return CurMessage;
+}
+
+QByteArray ChatProtocol::SetResponseToReceiveFileMessage(bool bAgreeToReceive)
+{
+    return bAgreeToReceive ? GetData(MessageType::AcceptSendingFile,"") : GetData(MessageType::RejecteSendingFile,"");
+}
+
+QByteArray ChatProtocol::SetFileChunkMessage(QByteArray& FileData)
+{
+    return GetData(MessageType::FileChunk, FileData);
+}
+
+QByteArray ChatProtocol::SetReadyForNextFileChunkMessage(qint64 Bytes)
+{
+    return GetData(MessageType::ReadyForNextFileChunk, Bytes);
+}
+

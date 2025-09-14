@@ -19,6 +19,10 @@ public:
     ~MainWindow();
 
 private slots:
+
+    void on_twChats_tabCloseRequested(int index);
+    void on_btnDisconnectAll_clicked();
+
     void NewClient(class QTcpSocket* ClientSocket);
     void ClientDisconnected(class QTcpSocket* ClientSocket);
     void SetClientName(const QString &OldName, const QString& NewName);

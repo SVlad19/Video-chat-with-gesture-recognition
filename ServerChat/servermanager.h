@@ -11,6 +11,7 @@ class ServerManager : public QObject
 public:
     explicit ServerManager(QObject *parent = nullptr);
     void NotifyOtherClients(const QString& OldName, const QString& Name);
+    void DisconnectAllClients();
 
 public slots:
     void OnTextForOtherClients(const QString& Message,const QString& Sender, const QString& Receiver);
