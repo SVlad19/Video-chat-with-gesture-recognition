@@ -115,3 +115,8 @@ void ClientManager::SaveFileChunk()
         bDirectoryCreated = false;
     }
 }
+
+void ClientManager::SendMessage(const QString &Message)
+{
+    ClientSocket->write(Protocol.SetTextMessage(Message,GetName(),"Server"));
+}

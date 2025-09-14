@@ -1,6 +1,7 @@
 #ifndef CLIENTCHATWIDGET_H
 #define CLIENTCHATWIDGET_H
 
+#include <QDir>
 #include <QWidget>
 #include "../Utility/protocol.h"
 
@@ -24,7 +25,15 @@ signals:
     void ClientChangedStatus(ChatProtocol::Status Status);
     void TextForOtherClients(const QString& Message,const QString &Sender, const QString &Receiver);
 
+protected:
+    void SendMessage();
+
 private slots:
+    void on_lOpenFolder_linkActivated(const QString &link);
+    void on_leMessage_textChanged(const QString &arg1);
+    void on_leMessage_returnPressed();
+    void on_btnSend_clicked();
+
     void ClientDisconnected();
     void OnClientNameChanged(const QString& OldName, const QString& NewName);
     void TextMessageReceived(const QString& Message,const QString &Sender, const QString &Receiver);
@@ -35,6 +44,7 @@ private slots:
 private:
     Ui::ClientChatWidget *ui;
     QScopedPointer<class ClientManager> Client;
+    QDir Directiory;
 };
 
 #endif // CLIENTCHATWIDGET_H

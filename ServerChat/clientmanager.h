@@ -14,6 +14,7 @@ public:
     void SendClientTyping();
     void DisconnectFromHost();
     void SendResponseToReceiveFile(bool bAgreeToReceive);
+    void SendMessage(const QString& Message);
 
 signals:
     void Connected();
