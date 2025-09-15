@@ -1,15 +1,21 @@
 #include "clientmanager.h"
 #include "filemanager.h"
+
 #include <QTcpSocket>
+#include <QtMultimedia>
+#include <QtMultimediaWidgets>
 
 ClientManager::ClientManager(QCameraViewfinder *CameraViewfinder, QWidget *parent) {
 
     ServerSocket.reset(new QTcpSocket());
     FileManag.reset(new FileManager(ServerSocket.data(),parent));
+    this->CameraViewfinder = CameraViewfinder;
 
     connect(ServerSocket.data(),&QTcpSocket::connected,this,&ClientManager::Connected);
     connect(ServerSocket.data(),&QTcpSocket::disconnected,this,&ClientManager::Disconnected);
     connect(ServerSocket.data(),&QTcpSocket::readyRead,this,&ClientManager::ReadyRead);
+
+    SetupCamera();
 }
 
 ClientManager::~ClientManager() {
@@ -36,7 +42,7 @@ void ClientManager::ReadyRead()
 
     switch (Protocol.GetDataType()) {
     case ChatProtocol::TextMessage:
-        emit TextMessageReceived(Protocol.GetMessage());
+        emit TextMessageReceived(Protocol.GetClientMessage());
         break;
     case ChatProtocol::ConnectionACK:
         emit ConncetionACK(Protocol.GetClientName(),Protocol.GetClientsName());
@@ -81,7 +87,7 @@ bool ClientManager::IsConnected() const
     return ServerSocket->state() == QTcpSocket::ConnectedState;
 }
 
-void ClientManager::SendMessage(const QString &Message, const QString& Sender, const QString &Receiver)
+void ClientManager::SendMessageToClient(const QString &Message, const QString& Sender, const QString &Receiver)
 {
     if(ServerSocket && ServerSocket->state() == QTcpSocket::ConnectedState){
         ServerSocket->write(Protocol.SetTextMessage(Message,Sender,Receiver));
@@ -124,4 +130,33 @@ void ClientManager::SendFile(qint64 Bytes)
             ServerSocket->write(Protocol.SetFileChunkMessage(FileChunk));
         }
     }
+}
+
+void ClientManager::SetupCamera()
+{
+    if(!QCameraInfo::availableCameras().isEmpty()){
+        Cameras = QCameraInfo::availableCameras();
+
+        UserCamera.reset(new QCamera(QCameraInfo::defaultCamera()));
+        UserCamera->setViewfinder(CameraViewfinder);
+
+        ImageCapture.reset(new QCameraImageCapture(UserCamera.data()));
+        connect(ImageCapture.get(), &QCameraImageCapture::imageCaptured, this, &ClientManager::OnImageCaptured);
+
+        ImageCaptureTimer.reset(new QTimer());
+        connect(ImageCaptureTimer.get(), &QTimer::timeout, this, &ClientManager::CaptureImage);
+    }
+}
+
+void ClientManager::OnImageCaptured(int Id, const QImage &Image)
+{
+}
+
+void ClientManager::CaptureImage()
+{
+}
+
+QList<QCameraInfo>& ClientManager::GetCameras()
+{
+    return Cameras;
 }

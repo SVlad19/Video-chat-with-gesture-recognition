@@ -28,7 +28,7 @@ void ClientManager::ReadyRead()
     }
     case ChatProtocol::TextMessage:
     {
-        emit TextMessageReceived(Protocol.GetMessage(),Protocol.GetClientName(),Protocol.GetReceiver());
+        emit TextMessageReceived(Protocol.GetClientMessage(),Protocol.GetClientName(),Protocol.GetReceiver());
         break;
     }
     case ChatProtocol::ClientChangeStatus:

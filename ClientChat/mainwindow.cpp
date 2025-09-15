@@ -6,6 +6,9 @@
 
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QCameraInfo>
+
+Q_DECLARE_METATYPE(QCameraInfo)
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -16,6 +19,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionDisconnect->setEnabled(false);
     ui->lineClientName->setText("Client");
     ui->centralwidget->setEnabled(false);
+    ui->wCameraViewfinder->setAutoFillBackground(true);
 
     ConnectionWindowWidget.reset(new ConnectionWidget());
     connect(ConnectionWindowWidget.data(),&ConnectionWidget::ConnectionDataReady,this,&MainWindow::HandleConnectionData);
@@ -30,7 +34,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::SetupClient()
 {
-    Client.reset(new ClientManager(nullptr,this));
+    Client.reset(new ClientManager(ui->wCameraViewfinder,this));
 
     connect(Client.data(), &ClientManager::Connected, [this](){
         ui->centralwidget->setEnabled(true);
@@ -50,6 +54,11 @@ void MainWindow::SetupClient()
     connect(Client.data(), &ClientManager::ClientTyping, this, &MainWindow::OnClientTyping);
     connect(Client.data(), &ClientManager::InitReceivingFile, this, &MainWindow::OnInitReceivingFile);
     connect(Client.data(), &ClientManager::RejectReceivingFile, this, &MainWindow::OnRejectReceivingFile);
+
+
+    foreach (auto& Camera, Client->GetCameras()) {
+        ui->cbCameras->addItem(Camera.description(),QVariant::fromValue(Camera));
+    }
 }
 
 void MainWindow::OnInitReceivingFile(const QString &ClientName, const QString &FileName, qint64 FileSize)
@@ -118,7 +127,7 @@ void MainWindow::SendMessage()
         return;
     }
 
-    Client->SendMessage(Message,ui->lineClientName->text(),ui->cbDestination->currentText());
+    Client->SendMessageToClient(Message,ui->lineClientName->text(),ui->cbDestination->currentText());
 
     ui->leMessage->clear();
     ui->leMessage->setFocus();

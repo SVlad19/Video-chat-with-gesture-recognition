@@ -46,7 +46,7 @@ public:
 
     inline MessageType GetDataType() const{return DataType;}
     inline QString GetClientName() const{return ClientName;}
-    inline QString GetMessage() const {return Message;}
+    inline QString GetClientMessage() const {return Message;}
     inline QString GetReceiver() const{return Receiver;}
     inline QList<QString> GetClientsName()const {return ClientsName;}
     inline QString GetOldClientName() const {return OldClientName;};

@@ -15,11 +15,12 @@ public:
     void DisconnectFromServer();
     void SendNewName(const QString& NewName);
     bool IsConnected() const;
-    void SendMessage(const QString& Message, const QString &Sender, const QString& Receiver);
+    void SendMessageToClient(const QString& Message, const QString &Sender, const QString& Receiver);
     void SendStatus(ChatProtocol::Status Status);
     void SendClientTyping();
     void SendInitSendingFile(const QString& FileName);
     void SendResponseToReceiveFile(bool bAgreeToReceive);
+    QList<class QCameraInfo>& GetCameras();
 
 signals:
     void Connected();
@@ -34,12 +35,20 @@ signals:
 
 private slots:
     void ReadyRead();
+    void OnImageCaptured(int Id, const QImage &Image);
+    void CaptureImage();
 
 private:
     void SendFile(qint64 Bytes);
+    void SetupCamera();
 
     QScopedPointer<class QTcpSocket> ServerSocket;
     QScopedPointer<class FileManager> FileManag;
+    QCameraViewfinder* CameraViewfinder;
+    QList<class QCameraInfo> Cameras;
+    QScopedPointer<class QCamera> UserCamera;
+    QScopedPointer<class QCameraImageCapture> ImageCapture;
+    QScopedPointer<QTimer> ImageCaptureTimer;
     ChatProtocol Protocol;
 };
 
