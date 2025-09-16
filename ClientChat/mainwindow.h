@@ -26,6 +26,8 @@ private slots:
     void on_cbStatus_currentIndexChanged(int index);
     void on_leMessage_textChanged(const QString &arg1);
     void on_btnSendFile_clicked();
+    void on_btnStartVideo_clicked();
+    void on_btnStopVideo_clicked();
 
     void HandleConnectionData(const QString& IP);
     void OnTextMessageReceived(const QString& Message);
@@ -38,7 +40,8 @@ private slots:
 
 private:
     void SetupClient();
-    void SendMessage();
+    void SetupCamera();
+    void SendMessageToClient();
 
     Ui::MainWindow *ui;
     QScopedPointer<class ConnectionWidget> ConnectionWindowWidget;

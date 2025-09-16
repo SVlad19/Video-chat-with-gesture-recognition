@@ -7,6 +7,8 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QCameraInfo>
+#include <QtMultimedia>
+#include <QtMultimediaWidgets>
 
 Q_DECLARE_METATYPE(QCameraInfo)
 
@@ -25,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ConnectionWindowWidget.data(),&ConnectionWidget::ConnectionDataReady,this,&MainWindow::HandleConnectionData);
 
     SetupClient();
+    SetupCamera();
 }
 
 MainWindow::~MainWindow()
@@ -34,7 +37,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::SetupClient()
 {
-    Client.reset(new ClientManager(ui->wCameraViewfinder,this));
+    Client.reset(new ClientManager(this));
 
     connect(Client.data(), &ClientManager::Connected, [this](){
         ui->centralwidget->setEnabled(true);
@@ -54,10 +57,21 @@ void MainWindow::SetupClient()
     connect(Client.data(), &ClientManager::ClientTyping, this, &MainWindow::OnClientTyping);
     connect(Client.data(), &ClientManager::InitReceivingFile, this, &MainWindow::OnInitReceivingFile);
     connect(Client.data(), &ClientManager::RejectReceivingFile, this, &MainWindow::OnRejectReceivingFile);
+}
 
+void MainWindow::SetupCamera()
+{
+    if(Client && !QCameraInfo::availableCameras().isEmpty()){
+        QList<QCameraInfo> Cameras = QCameraInfo::availableCameras();
 
-    foreach (auto& Camera, Client->GetCameras()) {
-        ui->cbCameras->addItem(Camera.description(),QVariant::fromValue(Camera));
+        foreach (auto& Camera, Cameras) {
+            ui->cbCameras->addItem(Camera.description(),QVariant::fromValue(Camera));
+        }
+
+        QCamera* CurrentCamera = new QCamera(QCameraInfo::defaultCamera());
+        CurrentCamera->setViewfinder(ui->wCameraViewfinder);
+
+        Client->SetClientCamera(CurrentCamera);
     }
 }
 
@@ -120,7 +134,7 @@ void MainWindow::HandleConnectionData(const QString &IP)
     }
 }
 
-void MainWindow::SendMessage()
+void MainWindow::SendMessageToClient()
 {
     QString Message = ui->leMessage->text().trimmed();
     if(Message.isEmpty()){
@@ -140,6 +154,11 @@ void MainWindow::SendMessage()
 
     ui->listChat->addItem(ListItem);
     ui->listChat->setItemWidget(ListItem,ChatWidget);
+}
+
+void MainWindow::OnRejectReceivingFile()
+{
+    QMessageBox::critical(this, "Sending file", "Operation rejected...");
 }
 
 void MainWindow::on_actionConnect_triggered()
@@ -174,7 +193,7 @@ void MainWindow::on_lineClientName_editingFinished()
 
 void MainWindow::on_btnSend_clicked()
 {
-    SendMessage();
+    SendMessageToClient();
 }
 
 void MainWindow::on_cbStatus_currentIndexChanged(int index)
@@ -201,7 +220,32 @@ void MainWindow::on_btnSendFile_clicked()
     }
 }
 
-void MainWindow::OnRejectReceivingFile()
+void MainWindow::on_btnStartVideo_clicked()
 {
-    QMessageBox::critical(this, "Sending file", "Operation rejected...");
+    if(Client && !Client->StartVideo()){
+        QMessageBox::critical(this,"Warning","Camera not detected!");
+    }else{
+        ui->wCameraViewfinder->setStyleSheet("background-color: black; color: white;");
+        ui->btnStartVideo->setEnabled(false);
+        ui->btnStopVideo->setEnabled(true);
+        ui->lineClientName->setEnabled(false);
+        ui->HSliderFrameRate->setEnabled(false);
+        ui->btnSendFile->setEnabled(false);
+        ui->checkBox->setEnabled(true);
+    }
+}
+
+void MainWindow::on_btnStopVideo_clicked()
+{
+    if(Client && !Client->StopVideo()){
+        QMessageBox::critical(this,"Warning","Camera not detected!");
+    }else{
+        ui->btnStartVideo->setEnabled(true);
+        ui->btnStopVideo->setEnabled(false);
+        ui->lineClientName->setEnabled(true);
+        ui->HSliderFrameRate->setEnabled(true);
+        ui->btnSendFile->setEnabled(true);
+        ui->checkBox->setChecked(false);
+        ui->checkBox->setEnabled(false);
+    }
 }

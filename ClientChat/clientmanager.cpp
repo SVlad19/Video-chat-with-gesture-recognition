@@ -1,21 +1,17 @@
+#include "cameramanager.h"
 #include "clientmanager.h"
 #include "filemanager.h"
 
 #include <QTcpSocket>
-#include <QtMultimedia>
-#include <QtMultimediaWidgets>
 
-ClientManager::ClientManager(QCameraViewfinder *CameraViewfinder, QWidget *parent) {
+ClientManager::ClientManager(QWidget *parent) {
 
     ServerSocket.reset(new QTcpSocket());
     FileManag.reset(new FileManager(ServerSocket.data(),parent));
-    this->CameraViewfinder = CameraViewfinder;
 
     connect(ServerSocket.data(),&QTcpSocket::connected,this,&ClientManager::Connected);
     connect(ServerSocket.data(),&QTcpSocket::disconnected,this,&ClientManager::Disconnected);
     connect(ServerSocket.data(),&QTcpSocket::readyRead,this,&ClientManager::ReadyRead);
-
-    SetupCamera();
 }
 
 ClientManager::~ClientManager() {
@@ -132,31 +128,23 @@ void ClientManager::SendFile(qint64 Bytes)
     }
 }
 
-void ClientManager::SetupCamera()
+void ClientManager::SetClientCamera(QCamera *ClientCamera)
 {
-    if(!QCameraInfo::availableCameras().isEmpty()){
-        Cameras = QCameraInfo::availableCameras();
+    CameraManag.reset(new CameraManager(ClientCamera));
+}
 
-        UserCamera.reset(new QCamera(QCameraInfo::defaultCamera()));
-        UserCamera->setViewfinder(CameraViewfinder);
-
-        ImageCapture.reset(new QCameraImageCapture(UserCamera.data()));
-        connect(ImageCapture.get(), &QCameraImageCapture::imageCaptured, this, &ClientManager::OnImageCaptured);
-
-        ImageCaptureTimer.reset(new QTimer());
-        connect(ImageCaptureTimer.get(), &QTimer::timeout, this, &ClientManager::CaptureImage);
+bool ClientManager::StartVideo()
+{
+    if(CameraManag){
+        return CameraManag->StartVideo();
     }
+    return false;
 }
 
-void ClientManager::OnImageCaptured(int Id, const QImage &Image)
+bool ClientManager::StopVideo()
 {
-}
-
-void ClientManager::CaptureImage()
-{
-}
-
-QList<QCameraInfo>& ClientManager::GetCameras()
-{
-    return Cameras;
+    if(CameraManag){
+        return CameraManag->StopVideo();
+    }
+    return false;
 }

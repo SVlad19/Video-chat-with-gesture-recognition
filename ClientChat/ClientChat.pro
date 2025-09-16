@@ -9,6 +9,7 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    cameramanager.cpp \
     chatitemwidget.cpp \
     clientmanager.cpp \
     connectionwidget.cpp \
@@ -19,6 +20,7 @@ SOURCES += \
     progressdialogwidget.cpp
 
 HEADERS += \
+    cameramanager.h \
     chatitemwidget.h \
     clientmanager.h \
     connectionwidget.h \

@@ -8,7 +8,7 @@ class ClientManager : public QObject
 {
     Q_OBJECT
 public:
-    ClientManager(class QCameraViewfinder *CameraViewfinder = nullptr, QWidget *parent = nullptr);
+    ClientManager(QWidget *parent = nullptr);
     ~ClientManager();
 
     void ConnectToServer(const QString& IP);
@@ -20,7 +20,9 @@ public:
     void SendClientTyping();
     void SendInitSendingFile(const QString& FileName);
     void SendResponseToReceiveFile(bool bAgreeToReceive);
-    QList<class QCameraInfo>& GetCameras();
+    void SetClientCamera(class QCamera* ClientCamera);
+    bool StartVideo();
+    bool StopVideo();
 
 signals:
     void Connected();
@@ -35,21 +37,15 @@ signals:
 
 private slots:
     void ReadyRead();
-    void OnImageCaptured(int Id, const QImage &Image);
-    void CaptureImage();
 
 private:
     void SendFile(qint64 Bytes);
-    void SetupCamera();
 
     QScopedPointer<class QTcpSocket> ServerSocket;
     QScopedPointer<class FileManager> FileManag;
-    QCameraViewfinder* CameraViewfinder;
-    QList<class QCameraInfo> Cameras;
-    QScopedPointer<class QCamera> UserCamera;
-    QScopedPointer<class QCameraImageCapture> ImageCapture;
-    QScopedPointer<QTimer> ImageCaptureTimer;
+    QScopedPointer<class CameraManager> CameraManag;
     ChatProtocol Protocol;
+
 };
 
 #endif // CLIENTMANAGER_H
