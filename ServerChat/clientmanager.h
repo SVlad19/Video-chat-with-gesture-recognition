@@ -26,9 +26,11 @@ signals:
     void InitReceivingFile(const QString& ClientName, const QString& FileName, qint64 FileSize);
     void RejectReceivingFile();
     void FileSavingFinished(const QString& Path);
+    void ImageReady(const QString& UserID,const QPixmap &Pixmap);
 
 protected:
     void SaveFileChunk();
+    void SaveVideoFrame();
 
 private slots:
     void ReadyRead();

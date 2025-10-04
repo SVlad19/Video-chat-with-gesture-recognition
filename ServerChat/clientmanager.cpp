@@ -2,6 +2,7 @@
 #include <QDataStream>
 #include <QDateTime>
 #include <QDir>
+#include <QPixmap>
 #include <QTcpSocket>
 
 ClientManager::ClientManager(QTcpSocket* Socket) {
@@ -16,37 +17,43 @@ ClientManager::ClientManager(QTcpSocket* Socket) {
 void ClientManager::ReadyRead()
 {
     QByteArray Data = ClientSocket->readAll();
-    Protocol.LoadData(Data);
+    Protocol.AppendData(Data);
 
-    switch (Protocol.GetDataType()) {
-    case ChatProtocol::ChangingName:
-    {
-        QString PrevName = ClientSocket->property("ClientName").toString();
-        ClientSocket->setProperty("ClientName",GetName());
-        emit NameChanged(PrevName,GetName());
-        break;
-    }
-    case ChatProtocol::TextMessage:
-    {
-        emit TextMessageReceived(Protocol.GetClientMessage(),Protocol.GetClientName(),Protocol.GetReceiver());
-        break;
-    }
-    case ChatProtocol::ClientChangeStatus:
-        emit ClientChangedStatus(Protocol.GetClientStatus());
-        break;
-    case ChatProtocol::ClientTyping:
-        emit ClientTyping();
-        break;
-    case ChatProtocol::InitSendingFile:
-        emit InitReceivingFile(Protocol.GetClientName(), Protocol.GetFileName(), Protocol.GetFileSize());
-        break;
-    case ChatProtocol::FileChunk:
-        SaveFileChunk();
-        break;
-    default:
-        break;
-    }
+    while (Protocol.HasFullPacket()) {
+        Protocol.ParseNextPacket();
 
+        switch (Protocol.GetDataType()) {
+        case ChatProtocol::ChangingName:
+        {
+            QString PrevName = ClientSocket->property("ClientName").toString();
+            ClientSocket->setProperty("ClientName",GetName());
+            emit NameChanged(PrevName,GetName());
+            break;
+        }
+        case ChatProtocol::TextMessage:
+        {
+            emit TextMessageReceived(Protocol.GetClientMessage(),Protocol.GetClientName(),Protocol.GetReceiver());
+            break;
+        }
+        case ChatProtocol::ClientChangeStatus:
+            emit ClientChangedStatus(Protocol.GetClientStatus());
+            break;
+        case ChatProtocol::ClientTyping:
+            emit ClientTyping();
+            break;
+        case ChatProtocol::InitSendingFile:
+            emit InitReceivingFile(Protocol.GetClientName(), Protocol.GetFileName(), Protocol.GetFileSize());
+            break;
+        case ChatProtocol::FileChunk:
+            SaveFileChunk();
+            break;
+        case ChatProtocol::VideoFrame:
+            SaveVideoFrame();
+            break;
+        default:
+            break;
+        }
+    }
 }
 
 QString ClientManager::GetName() const
@@ -62,7 +69,7 @@ QString ClientManager::GetName() const
 void ClientManager::SendClientTyping()
 {
     if(ClientSocket){
-        ClientSocket->write(Protocol.ClientTypingMessage());
+         ClientSocket->write(Protocol.CreatePacket(ChatProtocol::ClientTyping));
     }
 }
 
@@ -76,7 +83,7 @@ void ClientManager::DisconnectFromHost()
 void ClientManager::SendResponseToReceiveFile(bool bAgreeToReceive)
 {
     if(ClientSocket){
-        ClientSocket->write(Protocol.SetResponseToReceiveFileMessage(bAgreeToReceive));
+        ClientSocket->write(Protocol.CreatePacket(bAgreeToReceive ? ChatProtocol::AcceptSendingFile : ChatProtocol::RejecteSendingFile));
     }
 }
 
@@ -104,7 +111,7 @@ void ClientManager::SaveFileChunk()
     qint64 LastChunkSize = Protocol.GetFileData().size();
     ReceivedBytes += LastChunkSize;
 
-    ClientSocket->write(Protocol.SetReadyForNextFileChunkMessage(LastChunkSize));
+    ClientSocket->write(Protocol.CreatePacket(ChatProtocol::ReadyForNextFileChunk, LastChunkSize));
 
     if (ReceivedBytes >= Protocol.GetFileSize()) {
         emit FileSavingFinished(FilePath);
@@ -116,7 +123,23 @@ void ClientManager::SaveFileChunk()
     }
 }
 
+void ClientManager::SaveVideoFrame()
+{
+    QByteArray Frame = Protocol.GetFrameData();
+    QPixmap Pixmap;
+
+    if (Pixmap.loadFromData(Frame)) {
+        emit ImageReady(GetName(), Pixmap);
+    } else {
+        qDebug() << "Error with image";
+        qDebug() << "Pixamp.loadFromData error";
+    }
+}
+
 void ClientManager::SendMessage(const QString &Message)
 {
-    ClientSocket->write(Protocol.SetTextMessage(Message,GetName(),"Server"));
+    if(!ClientSocket){
+        return;
+    }
+    ClientSocket->write(Protocol.CreatePacket(ChatProtocol::TextMessage,QString("Server"),GetName(), Message));
 }

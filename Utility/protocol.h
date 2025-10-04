@@ -1,5 +1,6 @@
 #pragma once
 #include "QObject"
+#include "qdebug.h"
 
 #include <QIODevice>
 #include <QDataStream>
@@ -20,7 +21,8 @@ public:
         AcceptSendingFile,
         RejecteSendingFile,
         FileChunk,
-        ReadyForNextFileChunk
+        ReadyForNextFileChunk,
+        VideoFrame
     };
 
     enum Status{
@@ -30,19 +32,25 @@ public:
         Busy
     };
 
-    void LoadData(QByteArray Data);
+    template<typename... Args>
+    QByteArray CreatePacket(MessageType Type, const Args&... _Args)
+    {
+        QByteArray Block;
+        QDataStream Out(&Block, QIODevice::WriteOnly);
+        Out.setVersion(QDataStream::Qt_5_15);
 
-    QByteArray SetNameMessage(const QString& ClientName);
-    QByteArray SetTextMessage(const QString &Message, const QString &Receiver, const QString &Sender);
-    QByteArray SetConnectionACKMessage(const QString& ClientName, QList<QString> OtherClients);
-    QByteArray SetNewClientConnectedMessage(const QString& ClientName);
-    QByteArray SetClientChangedNameMessage(const QString& OldName, const QString& Name);
-    QByteArray SetStatusMessage(ChatProtocol::Status Status);
-    QByteArray ClientTypingMessage();
-    QByteArray SetInitSendingFileMessage(const QString& FileName);
-    QByteArray SetResponseToReceiveFileMessage(bool bAgreeToReceive);
-    QByteArray SetFileChunkMessage(QByteArray& FileData);
-    QByteArray SetReadyForNextFileChunkMessage(qint64 Bytes);
+        Out << quint32(0) << Type;
+        (Out << ... << _Args);
+
+        Out.device()->seek(0);
+        Out << quint32(Block.size() - sizeof(quint32));
+
+        return Block;
+    }
+
+    bool HasFullPacket() const;
+    void ParseNextPacket();
+    void AppendData(const QByteArray& data);
 
     inline MessageType GetDataType() const{return DataType;}
     inline QString GetClientName() const{return ClientName;}
@@ -55,11 +63,11 @@ public:
     inline qint64 GetFileSize() const {return FileSize; }
     inline qint64 GetSentPackageSize() const{ return SentPackageSize; }
     inline QByteArray GetFileData() const{ return FileData; }
+    inline QByteArray GetFrameData() const {return FrameData; }
 
 private:
-    template<typename T>
-    QByteArray GetData(const MessageType Type, const T& Message);
 
+    QByteArray Buffer;
     MessageType DataType;
     QString ClientName;
     QString OldClientName;
@@ -70,18 +78,8 @@ private:
     QByteArray FileData;
     qint64 SentPackageSize = 0;
     ChatProtocol::Status ClientStatus;
+    QByteArray FrameData;
     QList<QString> ClientsName;
 
 };
 
-template<typename T>
-QByteArray ChatProtocol::GetData(const MessageType Type, const T &Message)
-{
-    QByteArray CurMessage;
-    QDataStream Out(&CurMessage, QIODevice::WriteOnly);
-    Out.setVersion(QDataStream::Version::Qt_5_15);
-
-    Out << Type << Message;
-
-    return CurMessage;
-}

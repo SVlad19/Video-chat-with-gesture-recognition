@@ -75,6 +75,38 @@ void MainWindow::SetupCamera()
     }
 }
 
+void MainWindow::StartVideo()
+{
+    if(Client && !Client->StartVideo()){
+        QMessageBox::critical(this,"Warning","Camera not detected!");
+    }else{
+        ui->wCameraViewfinder->setStyleSheet("background-color: black; color: white;");
+        ui->btnStartVideo->setEnabled(false);
+        ui->btnStopVideo->setEnabled(true);
+        ui->lineClientName->setEnabled(false);
+        ui->HSliderFrameRate->setEnabled(false);
+        ui->btnSendFile->setEnabled(false);
+        ui->checkBox->setEnabled(true);
+        ui->cbCameras->setEnabled(false);
+    }
+}
+
+void MainWindow::StopVideo()
+{
+    if(Client && !Client->StopVideo()){
+        QMessageBox::critical(this,"Warning","Camera not detected!");
+    }else{
+        ui->btnStartVideo->setEnabled(true);
+        ui->btnStopVideo->setEnabled(false);
+        ui->lineClientName->setEnabled(true);
+        ui->HSliderFrameRate->setEnabled(true);
+        ui->btnSendFile->setEnabled(true);
+        ui->checkBox->setChecked(false);
+        ui->checkBox->setEnabled(false);
+        ui->cbCameras->setEnabled(true);
+    }
+}
+
 void MainWindow::OnInitReceivingFile(const QString &ClientName, const QString &FileName, qint64 FileSize)
 {
     QString Message = QString("Client (%1) wants to send a file. Do you want accept it?\nFile Name: %2\nFile Size: %3 bytes.").arg(ClientName,FileName).arg(FileSize);
@@ -222,30 +254,23 @@ void MainWindow::on_btnSendFile_clicked()
 
 void MainWindow::on_btnStartVideo_clicked()
 {
-    if(Client && !Client->StartVideo()){
-        QMessageBox::critical(this,"Warning","Camera not detected!");
-    }else{
-        ui->wCameraViewfinder->setStyleSheet("background-color: black; color: white;");
-        ui->btnStartVideo->setEnabled(false);
-        ui->btnStopVideo->setEnabled(true);
-        ui->lineClientName->setEnabled(false);
-        ui->HSliderFrameRate->setEnabled(false);
-        ui->btnSendFile->setEnabled(false);
-        ui->checkBox->setEnabled(true);
-    }
+    StartVideo();
 }
 
 void MainWindow::on_btnStopVideo_clicked()
 {
-    if(Client && !Client->StopVideo()){
-        QMessageBox::critical(this,"Warning","Camera not detected!");
-    }else{
-        ui->btnStartVideo->setEnabled(true);
-        ui->btnStopVideo->setEnabled(false);
-        ui->lineClientName->setEnabled(true);
-        ui->HSliderFrameRate->setEnabled(true);
-        ui->btnSendFile->setEnabled(true);
-        ui->checkBox->setChecked(false);
-        ui->checkBox->setEnabled(false);
+    StopVideo();
+}
+
+void MainWindow::on_cbCameras_currentIndexChanged(int index)
+{
+    if(Client){
+        QCamera* NewCamera = new QCamera(ui->cbCameras->itemData(index).value<QCameraInfo>());
+        if(NewCamera){
+            NewCamera->setViewfinder(ui->wCameraViewfinder);
+
+
+            Client->SetClientCamera(NewCamera);
+        }
     }
 }

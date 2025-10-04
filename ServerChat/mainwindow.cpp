@@ -2,7 +2,9 @@
 #include "mainwindow.h"
 #include "servermanager.h"
 #include "ui_mainwindow.h"
+#include <QLabel>
 #include <QTcpSocket>
+#include <QTimer>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -97,5 +99,42 @@ void MainWindow::on_twChats_tabCloseRequested(int index)
     if(ClientChatWidget* ChatWidget = qobject_cast<ClientChatWidget*>(ui->twChats->widget(index))){
         ChatWidget->Disconnect();
         ui->twChats->removeTab(index);
+    }
+}
+
+void MainWindow::DisplayImage(const QString& UserId, const QPixmap &pixmap)
+{
+    QLabel *Label;
+    QTimer *Timer;
+
+    if (UserLabels.contains(UserId)) {
+        Label = UserLabels[UserId];
+        Timer = UserTimers[UserId];
+    } else {
+        Label = new QLabel(this);
+        Label->setObjectName(UserId);
+        UserLabels[UserId] = Label;
+        ui->vlVideos->addWidget(Label);
+
+        Timer = new QTimer(this);
+        Timer->setInterval(ClearLabelDelay);
+        Timer->setSingleShot(true);
+        connect(Timer, &QTimer::timeout, [=]() { RemoveUserLabel(UserId); });
+
+        UserTimers[UserId] = Timer;
+    }
+
+    Label->setPixmap(pixmap.scaled(Label->size(), Qt::KeepAspectRatio));
+    Timer->start();
+}
+
+void MainWindow::RemoveUserLabel(const QString &UserId)
+{
+    if (UserLabels.contains(UserId)) {
+        QLabel *CurLabel = UserLabels.take(UserId);
+        delete CurLabel;
+
+        QTimer *CurTimer = UserTimers.take(UserId);
+        delete CurTimer;
     }
 }

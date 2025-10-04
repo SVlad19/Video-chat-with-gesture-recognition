@@ -31,10 +31,12 @@ void ServerManager::NewClientConnected()
     emit NewClient(ClientSocket);
 
     if(Id > 1){
-        QByteArray Message = Protocol.SetConnectionACKMessage(ClientName, ClientSockets.keys());
+       // QByteArray Message = Protocol.SetConnectionACKMessage(ClientName, ClientSockets.keys());
+        QByteArray Message = Protocol.CreatePacket(ChatProtocol::ConnectionACK, ClientName, ClientSockets.keys());
         ClientSocket->write(Message);
 
-        auto NewClientMessage = Protocol.SetNewClientConnectedMessage(ClientName);
+        //auto NewClientMessage = Protocol.SetNewClientConnectedMessage(ClientName);
+        QByteArray NewClientMessage = Protocol.CreatePacket(ChatProtocol::NewClientConnected, ClientName);
         foreach (auto Client, ClientSockets) {
             Client->write(NewClientMessage);
         }
@@ -45,7 +47,8 @@ void ServerManager::NewClientConnected()
 
 void ServerManager::OnTextForOtherClients(const QString &Message, const QString &Sender, const QString &Receiver)
 {
-    QByteArray CurMessage = Protocol.SetTextMessage(Message,Receiver,"");
+    //QByteArray CurMessage = Protocol.SetTextMessage(Message,Receiver,"");
+    QByteArray CurMessage = Protocol.CreatePacket(ChatProtocol::TextMessage, Sender, Receiver, Message);
 
     if(Receiver == "All"){
         foreach (auto Client, ClientSockets) {
@@ -76,7 +79,8 @@ void ServerManager::OnClientDisconnected()
 
 void ServerManager::NotifyOtherClients(const QString &OldName, const QString &Name)
 {
-    QByteArray Message = Protocol.SetClientChangedNameMessage(OldName,Name);
+  //  QByteArray Message = Protocol.SetClientChangedNameMessage(OldName,Name);
+    QByteArray Message = Protocol.CreatePacket(ChatProtocol::ClientChangedName,OldName,Name);
 
     foreach (auto Client, ClientSockets) {
         QString ClientName = Client->property("ClientName").toString();

@@ -28,6 +28,7 @@ private slots:
     void on_btnSendFile_clicked();
     void on_btnStartVideo_clicked();
     void on_btnStopVideo_clicked();
+    void on_cbCameras_currentIndexChanged(int index);
 
     void HandleConnectionData(const QString& IP);
     void OnTextMessageReceived(const QString& Message);
@@ -41,6 +42,8 @@ private slots:
 private:
     void SetupClient();
     void SetupCamera();
+    void StartVideo();
+    void StopVideo();
     void SendMessageToClient();
 
     Ui::MainWindow *ui;

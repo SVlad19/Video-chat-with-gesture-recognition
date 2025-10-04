@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 #include "../Utility/protocol.h"
+#include <QLabel>
+#include <QMap>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -18,6 +20,12 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+public slots:
+    void DisplayImage(const QString& UserID, const QPixmap &pixmap);
+
+protected:
+    void RemoveUserLabel(const QString &UserId);
+
 private slots:
 
     void on_twChats_tabCloseRequested(int index);
@@ -31,5 +39,9 @@ private slots:
 private:
     Ui::MainWindow *ui;
     QScopedPointer<class ServerManager> ServerManag;
+    QMap<QString, QLabel*> UserLabels;
+    QMap<QString, QTimer*> UserTimers;
+    int ClearLabelDelay = 1100;
 };
 #endif // MAINWINDOW_H
+

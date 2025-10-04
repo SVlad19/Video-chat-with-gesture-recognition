@@ -2,6 +2,7 @@
 #include "clientmanager.h"
 #include "filemanager.h"
 
+#include <QFileInfo>
 #include <QTcpSocket>
 
 ClientManager::ClientManager(QWidget *parent) {
@@ -34,46 +35,57 @@ void ClientManager::DisconnectFromServer()
 void ClientManager::ReadyRead()
 {
     QByteArray Data = ServerSocket->readAll();
-    Protocol.LoadData(Data);
+    Protocol.AppendData(Data);
 
-    switch (Protocol.GetDataType()) {
-    case ChatProtocol::TextMessage:
-        emit TextMessageReceived(Protocol.GetClientMessage());
-        break;
-    case ChatProtocol::ConnectionACK:
-        emit ConncetionACK(Protocol.GetClientName(),Protocol.GetClientsName());
-        break;
-    case ChatProtocol::NewClientConnected:
-        emit NewClientConnectedToServer(Protocol.GetClientName());
-        break;
-    case ChatProtocol::ClientChangedName:
-        emit ClientChangedName(Protocol.GetOldClientName(),Protocol.GetClientName());
-        break;
-    case ChatProtocol::ClientTyping:
-        emit ClientTyping();
-        break;
-    case ChatProtocol::InitSendingFile:
-        emit InitReceivingFile(Protocol.GetClientName(), Protocol.GetFileName(), Protocol.GetFileSize());
-        break;
-    case ChatProtocol::AcceptSendingFile:
-        FileManag->ShowProgressBar();
-        SendFile(0);
-        break;
-    case ChatProtocol::RejecteSendingFile:
-        emit RejectReceivingFile();
-        break;
-    case ChatProtocol::ReadyForNextFileChunk:
-        SendFile(Protocol.GetSentPackageSize());
-        break;
-    default:
-        break;
+    while (Protocol.HasFullPacket()) {
+        Protocol.ParseNextPacket();
+
+        switch (Protocol.GetDataType()) {
+        case ChatProtocol::TextMessage:
+            emit TextMessageReceived(Protocol.GetClientMessage());
+            break;
+        case ChatProtocol::ConnectionACK:
+            emit ConncetionACK(Protocol.GetClientName(),Protocol.GetClientsName());
+            break;
+        case ChatProtocol::NewClientConnected:
+            emit NewClientConnectedToServer(Protocol.GetClientName());
+            break;
+        case ChatProtocol::ClientChangedName:
+            emit ClientChangedName(Protocol.GetOldClientName(),Protocol.GetClientName());
+            break;
+        case ChatProtocol::ClientTyping:
+            emit ClientTyping();
+            break;
+        case ChatProtocol::InitSendingFile:
+            emit InitReceivingFile(Protocol.GetClientName(), Protocol.GetFileName(), Protocol.GetFileSize());
+            break;
+        case ChatProtocol::AcceptSendingFile:
+            FileManag->ShowProgressBar();
+            SendFile(0);
+            break;
+        case ChatProtocol::RejecteSendingFile:
+            emit RejectReceivingFile();
+            break;
+        case ChatProtocol::ReadyForNextFileChunk:
+            SendFile(Protocol.GetSentPackageSize());
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+void ClientManager::OnFrameReady(QByteArray &Frame)
+{
+    if(ServerSocket){
+        ServerSocket->write(Protocol.CreatePacket(ChatProtocol::VideoFrame,Frame));
     }
 }
 
 void ClientManager::SendNewName(const QString &NewName)
 {
     if(ServerSocket && ServerSocket->state() == QTcpSocket::ConnectedState){
-        ServerSocket->write(Protocol.SetNameMessage(NewName));
+        ServerSocket->write(Protocol.CreatePacket(ChatProtocol::ChangingName,NewName));
     }
 }
 
@@ -86,35 +98,36 @@ bool ClientManager::IsConnected() const
 void ClientManager::SendMessageToClient(const QString &Message, const QString& Sender, const QString &Receiver)
 {
     if(ServerSocket && ServerSocket->state() == QTcpSocket::ConnectedState){
-        ServerSocket->write(Protocol.SetTextMessage(Message,Sender,Receiver));
+        ServerSocket->write(Protocol.CreatePacket(ChatProtocol::TextMessage, Sender, Receiver, Message));
     }
 }
 
 void ClientManager::SendStatus(ChatProtocol::Status Status)
 {
     if(ServerSocket && ServerSocket->state() == QTcpSocket::ConnectedState){
-        ServerSocket->write(Protocol.SetStatusMessage(Status));
+        ServerSocket->write(Protocol.CreatePacket(ChatProtocol::ClientChangeStatus,Status));
     }
 }
 
 void ClientManager::SendClientTyping()
 {
     if(ServerSocket && ServerSocket->state() == QTcpSocket::ConnectedState){
-        ServerSocket->write(Protocol.ClientTypingMessage());
+        ServerSocket->write(Protocol.CreatePacket(ChatProtocol::ClientTyping));
     }
 }
 
 void ClientManager::SendInitSendingFile(const QString &FileName)
 {
     if( ServerSocket && FileManag && FileManag->FileSelected(FileName)){
-        ServerSocket->write(Protocol.SetInitSendingFileMessage(FileName));
+        QFileInfo Info(FileName);
+        ServerSocket->write(Protocol.CreatePacket(ChatProtocol::InitSendingFile,Info.fileName(), Info.size()));
     }
 }
 
 void ClientManager::SendResponseToReceiveFile(bool bAgreeToReceive)
 {
     if(ServerSocket){
-        ServerSocket->write(Protocol.SetResponseToReceiveFileMessage(bAgreeToReceive));
+        ServerSocket->write(Protocol.CreatePacket(bAgreeToReceive ? ChatProtocol::MessageType::AcceptSendingFile : ChatProtocol::MessageType::RejecteSendingFile));
     }
 }
 
@@ -123,14 +136,19 @@ void ClientManager::SendFile(qint64 Bytes)
     if(ServerSocket && FileManag){
         QByteArray FileChunk = FileManag->GetFileChunk(Bytes);
         if(!FileChunk.isEmpty()){
-            ServerSocket->write(Protocol.SetFileChunkMessage(FileChunk));
+            ServerSocket->write(Protocol.CreatePacket(ChatProtocol::FileChunk,FileChunk));
         }
     }
 }
 
 void ClientManager::SetClientCamera(QCamera *ClientCamera)
 {
-    CameraManag.reset(new CameraManager(ClientCamera));
+    if(!CameraManag){
+        CameraManag.reset(new CameraManager(ClientCamera));
+        connect(CameraManag.get(), &CameraManager::FrameReady, this, &ClientManager::OnFrameReady);
+    }else{
+        CameraManag->SetClientCamera(ClientCamera);
+    }
 }
 
 bool ClientManager::StartVideo()

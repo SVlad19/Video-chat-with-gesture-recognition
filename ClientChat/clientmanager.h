@@ -23,6 +23,7 @@ public:
     void SetClientCamera(class QCamera* ClientCamera);
     bool StartVideo();
     bool StopVideo();
+    bool HasCamera()const;
 
 signals:
     void Connected();
@@ -37,6 +38,7 @@ signals:
 
 private slots:
     void ReadyRead();
+    void OnFrameReady(QByteArray& Frame);
 
 private:
     void SendFile(qint64 Bytes);

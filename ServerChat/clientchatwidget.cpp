@@ -1,6 +1,7 @@
 #include "clientchatwidget.h"
 #include "ui_clientchatwidget.h"
 #include "clientmanager.h"
+#include <MainWindow.h>
 #include <QDesktopServices>
 #include <QMessageBox>
 #include <QTcpSocket>
@@ -22,8 +23,10 @@ ClientChatWidget::ClientChatWidget(QTcpSocket *ClientSocket, QWidget *parent)
     connect(Client.data(),&ClientManager::ClientTyping,this,&ClientChatWidget::OnClientTyping);
     connect(Client.data(),&ClientManager::InitReceivingFile,this,&ClientChatWidget::OnInitReceivingFile);
     connect(Client.data(),&ClientManager::FileSavingFinished,this,&ClientChatWidget::OnFileSavingFinished);
+    connect(Client.data(),&ClientManager::ImageReady,dynamic_cast<MainWindow*>(parent),&MainWindow::DisplayImage);
 
     connect(ui->leMessage,&QLineEdit::textChanged,Client.data(),&ClientManager::SendClientTyping);
+
 
     Directiory.mkdir(Client->GetName());
     Directiory.setPath("./" + Client->GetName());
