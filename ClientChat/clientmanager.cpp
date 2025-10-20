@@ -1,9 +1,12 @@
 #include "cameramanager.h"
 #include "clientmanager.h"
 #include "filemanager.h"
+#include "gesturerecognizer.h"
 
 #include <QFileInfo>
 #include <QTcpSocket>
+#include <QThread>
+#include <QTimer>
 
 ClientManager::ClientManager(QWidget *parent) {
 
@@ -13,9 +16,23 @@ ClientManager::ClientManager(QWidget *parent) {
     connect(ServerSocket.data(),&QTcpSocket::connected,this,&ClientManager::Connected);
     connect(ServerSocket.data(),&QTcpSocket::disconnected,this,&ClientManager::Disconnected);
     connect(ServerSocket.data(),&QTcpSocket::readyRead,this,&ClientManager::ReadyRead);
+
+    PythonThread = new QThread(this);
+    Recognizer.reset(new GestureRecognizer());
+    Recognizer->moveToThread(PythonThread);
+
+    connect(PythonThread, &QThread::started, Recognizer.get(), &GestureRecognizer::StartProcess);
+    connect(PythonThread, &QThread::finished, Recognizer.get(), &QObject::deleteLater);
+    connect(this, &ClientManager::SendFrameToPythonWorker, Recognizer.get(), &GestureRecognizer::ProcessFrame);
+    connect(Recognizer.get(), &GestureRecognizer::GestureRecognized, this, &ClientManager::GestureRecognized);
+
+    PythonThread->start();
 }
 
 ClientManager::~ClientManager() {
+    PythonThread->quit();
+    PythonThread->wait();
+    delete PythonThread;
 }
 
 void ClientManager::ConnectToServer(const QString &IP)
@@ -75,9 +92,14 @@ void ClientManager::ReadyRead()
     }
 }
 
-void ClientManager::OnFrameReady(QByteArray &Frame)
+void ClientManager::OnFrameReady(const QImage & Image, const QByteArray &Frame)
 {
     if(ServerSocket){
+
+        if (bRecognition) {
+            PendingFrame = Image;
+        }
+
         ServerSocket->write(Protocol.CreatePacket(ChatProtocol::VideoFrame,Frame));
     }
 }
@@ -165,4 +187,42 @@ bool ClientManager::StopVideo()
         return CameraManag->StopVideo();
     }
     return false;
+}
+
+void ClientManager::ProcessPendingGestureFrame()
+{
+    if (!bRecognition || PendingFrame.isNull()) return;
+    emit SendFrameToPythonWorker(PendingFrame);
+}
+
+/*
+ * Gesture Recognizer
+ */
+
+void ClientManager::StartGestureRecognizer()
+{
+    if (!Recognizer || !PythonThread) return;
+
+    bRecognition = true;
+
+    if (!GestureTimer) {
+        GestureTimer = new QTimer(this);
+        connect(GestureTimer, &QTimer::timeout, this, &ClientManager::ProcessPendingGestureFrame);
+    }
+
+    GestureTimer->start(1000);
+}
+
+void ClientManager::StopGestureRecognizer()
+{
+    if (!Recognizer || !PythonThread) return;
+
+    bRecognition = false;
+
+    if (GestureTimer) {
+        GestureTimer->stop();
+        GestureTimer->deleteLater();
+        GestureTimer = nullptr;
+    }
+
 }

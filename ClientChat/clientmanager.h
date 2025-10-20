@@ -1,6 +1,7 @@
 #ifndef CLIENTMANAGER_H
 #define CLIENTMANAGER_H
 
+#include <QImage>
 #include <QObject>
 #include "../Utility/protocol.h"
 
@@ -24,6 +25,8 @@ public:
     bool StartVideo();
     bool StopVideo();
     bool HasCamera()const;
+    void StartGestureRecognizer();
+    void StopGestureRecognizer();
 
 signals:
     void Connected();
@@ -35,18 +38,27 @@ signals:
     void ClientTyping();
     void InitReceivingFile(const QString& ClientName, const QString& FileName, qint64 FileSize);
     void RejectReceivingFile();
+    void SendFrameToPythonWorker(QImage);
+    void HandleRecognizedGesture(QString);
+    void GestureRecognized(const QString& gesture);
 
 private slots:
     void ReadyRead();
-    void OnFrameReady(QByteArray& Frame);
+    void OnFrameReady(const QImage & Image, const QByteArray& Frame);
 
 private:
     void SendFile(qint64 Bytes);
+    void ProcessPendingGestureFrame();
 
     QScopedPointer<class QTcpSocket> ServerSocket;
     QScopedPointer<class FileManager> FileManag;
     QScopedPointer<class CameraManager> CameraManag;
+    QScopedPointer<class GestureRecognizer> Recognizer;
     ChatProtocol Protocol;
+    QThread *PythonThread = nullptr;
+    bool bRecognition = false;
+    QImage PendingFrame;
+    QTimer *GestureTimer = nullptr;
 
 };
 

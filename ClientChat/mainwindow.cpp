@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->lineClientName->setText("Client");
     ui->centralwidget->setEnabled(false);
     ui->wCameraViewfinder->setAutoFillBackground(true);
+    ui->btnStopVideo->setEnabled(false);
 
     ConnectionWindowWidget.reset(new ConnectionWidget());
     connect(ConnectionWindowWidget.data(),&ConnectionWidget::ConnectionDataReady,this,&MainWindow::HandleConnectionData);
@@ -73,6 +74,8 @@ void MainWindow::SetupCamera()
 
         Client->SetClientCamera(CurrentCamera);
     }
+
+    connect(Client.data(), &ClientManager::GestureRecognized, this, &MainWindow::OnGestureRecognized);
 }
 
 void MainWindow::StartVideo()
@@ -86,7 +89,7 @@ void MainWindow::StartVideo()
         ui->lineClientName->setEnabled(false);
         ui->HSliderFrameRate->setEnabled(false);
         ui->btnSendFile->setEnabled(false);
-        ui->checkBox->setEnabled(true);
+        ui->cbGesutre->setEnabled(false);
         ui->cbCameras->setEnabled(false);
     }
 }
@@ -101,8 +104,7 @@ void MainWindow::StopVideo()
         ui->lineClientName->setEnabled(true);
         ui->HSliderFrameRate->setEnabled(true);
         ui->btnSendFile->setEnabled(true);
-        ui->checkBox->setChecked(false);
-        ui->checkBox->setEnabled(false);
+        ui->cbGesutre->setEnabled(true);
         ui->cbCameras->setEnabled(true);
     }
 }
@@ -193,6 +195,24 @@ void MainWindow::OnRejectReceivingFile()
     QMessageBox::critical(this, "Sending file", "Operation rejected...");
 }
 
+void MainWindow::OnGestureRecognized(const QString& gesture)
+{
+    QString currentText = ui->leMessage->text();
+
+    if (gesture == "del") {
+        if (!currentText.isEmpty()) {
+            currentText.chop(1);
+        }
+    } else if (gesture == "space") {
+        currentText += " ";
+    } else {
+        currentText += gesture;
+    }
+
+    ui->leMessage->setText(currentText);
+    ui->leMessage->setCursorPosition(currentText.length());
+}
+
 void MainWindow::on_actionConnect_triggered()
 {
     if(ConnectionWindowWidget){
@@ -274,3 +294,15 @@ void MainWindow::on_cbCameras_currentIndexChanged(int index)
         }
     }
 }
+
+void MainWindow::on_cbGesutre_stateChanged(int arg1)
+{
+    qDebug() << "Check state:" << arg1;
+
+    if (arg1 == Qt::Checked) {
+        Client->StartGestureRecognizer();
+    } else {
+        Client->StopGestureRecognizer();
+    }
+}
+

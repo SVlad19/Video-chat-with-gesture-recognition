@@ -1,4 +1,4 @@
-QT       += core gui network multimedia multimediawidgets
+QT       += core gui network multimedia multimediawidgets concurrent
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -14,6 +14,7 @@ SOURCES += \
     clientmanager.cpp \
     connectionwidget.cpp \
     filemanager.cpp \
+    gesturerecognizer.cpp \
     main.cpp \
     mainwindow.cpp \
     ../Utility/protocol.cpp \
@@ -25,6 +26,7 @@ HEADERS += \
     clientmanager.h \
     connectionwidget.h \
     filemanager.h \
+    gesturerecognizer.h \
     mainwindow.h \
     ../Utility/protocol.h \
     progressdialogwidget.h

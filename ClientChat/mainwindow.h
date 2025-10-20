@@ -29,6 +29,7 @@ private slots:
     void on_btnStartVideo_clicked();
     void on_btnStopVideo_clicked();
     void on_cbCameras_currentIndexChanged(int index);
+    void on_cbGesutre_stateChanged(int arg1);
 
     void HandleConnectionData(const QString& IP);
     void OnTextMessageReceived(const QString& Message);
@@ -38,6 +39,9 @@ private slots:
     void OnClientTyping();
     void OnInitReceivingFile(const QString& ClientName, const QString& FileName, qint64 FileSize);
     void OnRejectReceivingFile();
+    void OnGestureRecognized(const QString& gesture);
+
+
 
 private:
     void SetupClient();
